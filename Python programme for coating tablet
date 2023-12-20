@@ -1,0 +1,28 @@
+import time
+import random
+
+def tablet_coating_process(num_tablets, coating_solution, coating_time):
+    print("Tablet Coating Process:")
+    
+    for tablet_number in range(1, num_tablets + 1):
+        print(f"\nCoating Tablet {tablet_number}...")
+        
+        # Simulate coating process (e.g., applying coating solution)
+        time.sleep(coating_time)  # Simulating time for coating
+        
+        # Check if the coating is successful (assuming a success rate of 90%)
+        if random.random() < 0.9:
+            print("Coating Successful!")
+        else:
+            print("Coating Failed. Retrying...")
+
+    print("\nCoating Process Completed.")
+
+if __name__ == "__main__":
+    # Set the parameters for tablet coating
+    num_tablets = 20
+    coating_solution = "Polymer Coating"  # Example coating solution
+    coating_time = 2  # Example coating time in seconds per tablet
+
+    # Simulate the tablet coating process
+    tablet_coating_process(num_tablets, coating_solution, coating_time)
