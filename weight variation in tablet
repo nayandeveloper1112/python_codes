@@ -1,0 +1,30 @@
+import random
+
+def simulate_tablet_weight_test(num_tablets, target_weight_range):
+    passed_tablets = 0
+    failed_tablets = 0
+
+    for tablet_number in range(1, num_tablets + 1):
+        # Simulate tablet weighing process (assuming a normal distribution)
+        tablet_weight = random.uniform(*target_weight_range)
+
+        # Check if tablet weight is within the target range
+        if target_weight_range[0] <= tablet_weight <= target_weight_range[1]:
+            print(f"Tablet {tablet_number}: Weight {tablet_weight:.3f} grams - Passed")
+            passed_tablets += 1
+        else:
+            print(f"Tablet {tablet_number}: Weight {tablet_weight:.3f} grams - Failed")
+            failed_tablets += 1
+
+    print("\nWeight Variation Test Summary:")
+    print(f"Total Tablets: {num_tablets}")
+    print(f"Passed Tablets: {passed_tablets}")
+    print(f"Failed Tablets: {failed_tablets}")
+
+if __name__ == "__main__":
+    # Set the number of tablets and the target weight range
+    num_tablets = 50
+    target_weight_range = (4.8, 5.2)  # Example target weight range in grams
+
+    # Simulate the tablet weight test
+    simulate_tablet_weight_test(num_tablets, target_weight_range)
