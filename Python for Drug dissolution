@@ -1,0 +1,30 @@
+import matplotlib.pyplot as plt
+
+def simulate_tablet_dissolution(dissolution_time, dissolution_rate):
+    time_points = list(range(0, dissolution_time + 1))
+    dissolved_percentage = [0]  # Starting with 0% dissolved
+
+    for time in range(1, dissolution_time + 1):
+        dissolution_percentage = dissolved_percentage[-1] + dissolution_rate
+        dissolved_percentage.append(min(100, dissolution_percentage))  # Cap at 100%
+
+    return time_points, dissolved_percentage
+
+def plot_dissolution_profile(time_points, dissolved_percentage):
+    plt.plot(time_points, dissolved_percentage, marker='o')
+    plt.title('Tablet Dissolution Profile')
+    plt.xlabel('Time (hours)')
+    plt.ylabel('Dissolved Percentage')
+    plt.grid(True)
+    plt.show()
+
+if __name__ == "__main__":
+    # Set parameters for tablet dissolution
+    dissolution_time = 24  # 24 hours
+    dissolution_rate = 4  # Example: 4% dissolution per hour
+
+    # Simulate tablet dissolution
+    time_points, dissolved_percentage = simulate_tablet_dissolution(dissolution_time, dissolution_rate)
+
+    # Plot the dissolution profile
+    plot_dissolution_profile(time_points, dissolved_percentage)
