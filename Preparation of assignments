@@ -1,0 +1,25 @@
+def create_assignment():
+    title = input("Enter assignment title: ")
+    description = input("Enter assignment description: ")
+    due_date = input("Enter due date (e.g., YYYY-MM-DD): ")
+
+    # Create assignment object
+    assignment = {
+        "title": title,
+        "description": description,
+        "due_date": due_date
+    }
+
+    return assignment
+
+def save_assignment(assignment, filename):
+    with open(filename, "w") as file:
+        file.write(f"Title: {assignment['title']}\n")
+        file.write(f"Description: {assignment['description']}\n")
+        file.write(f"Due Date: {assignment['due_date']}\n")
+
+if __name__ == "__main__":
+    assignment = create_assignment()
+    filename = input("Enter filename to save assignment: ")
+    save_assignment(assignment, filename)
+    print(f"Assignment saved to {filename}")
