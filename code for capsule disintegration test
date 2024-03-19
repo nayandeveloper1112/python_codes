@@ -1,0 +1,36 @@
+def simulate_disintegration_test(capsules, disintegration_time=30):
+    """
+    Simulates the disintegration test for capsules.
+
+    Args:
+        capsules (int): Number of capsules to test.
+        disintegration_time (int, optional): Prescribed disintegration time in minutes. Defaults to 30.
+
+    Returns:
+        bool: True if all capsules disintegrate within the specified time, else False.
+    """
+    # Assume capsules disintegrate within 30 minutes
+    for capsule in range(1, capsules + 1):
+        print(f"Testing capsule {capsule}...")
+        # Simulate disintegration process (you can customize this part)
+        # For example, check if the capsule dissolves or breaks apart
+        # based on experimental conditions and time elapsed
+        # You might need additional data or specific criteria for disintegration
+
+        # Placeholder: Assume all capsules disintegrate
+        # Replace this with actual logic based on your requirements
+        disintegrated = True
+
+        if not disintegrated:
+            print(f"⚠️ Capsule {capsule} did not disintegrate within {disintegration_time} minutes.")
+            return False
+
+    print(f"All {capsules} capsules disintegrated within {disintegration_time} minutes. ✔️")
+    return True
+
+# Example usage:
+total_capsules = 18
+if simulate_disintegration_test(total_capsules):
+    print("Quality control passed! All capsules meet disintegration requirements.")
+else:
+    print("Quality control failed. Investigate further.")
