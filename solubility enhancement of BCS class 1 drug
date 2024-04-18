@@ -1,0 +1,26 @@
+class BCSClass1Drug:
+    def __init__(self, name, solubility):
+        self.name = name
+        self.solubility = solubility  # Initial solubility in mg/mL
+
+    def enhance_solubility(self, carrier_material, ratio):
+        # Assume solid dispersion method for solubility enhancement
+        # Carrier material can be a polymer like PVP, PEG, etc.
+        enhanced_solubility = self.solubility * ratio
+        return enhanced_solubility
+
+
+if __name__ == "__main__":
+    # Create an instance of BCSClass1Drug
+    drug_name = "Drug X"
+    initial_solubility = 5  # mg/mL
+    drug = BCSClass1Drug(drug_name, initial_solubility)
+
+    # Enhance solubility using solid dispersion with a carrier material
+    carrier_material = "PVP"
+    dispersion_ratio = 2  # Enhancement factor
+    enhanced_solubility = drug.enhance_solubility(carrier_material, dispersion_ratio)
+
+    # Display results
+    print(f"Initial solubility of {drug.name}: {drug.solubility} mg/mL")
+    print(f"Enhanced solubility using {carrier_material} solid dispersion: {enhanced_solubility} mg/mL")
