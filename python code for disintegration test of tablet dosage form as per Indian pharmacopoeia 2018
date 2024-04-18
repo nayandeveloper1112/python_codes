@@ -1,0 +1,34 @@
+import time
+
+class Tablet:
+    def __init__(self, name, weight):
+        self.name = name
+        self.weight = weight
+
+    def disintegrate(self):
+        print(f"Tablet '{self.name}' ({self.weight} mg): Initiating disintegration test...")
+        time.sleep(2)  # Simulating disintegration process
+        print("Tablet disintegrated.")
+        return True
+
+class DisintegrationTest:
+    def __init__(self, tablets):
+        self.tablets = tablets
+
+    def run_test(self):
+        print("Starting disintegration test...")
+        for tablet in self.tablets:
+            if tablet.disintegrate():
+                print(f"Disintegration test passed for Tablet '{tablet.name}'")
+            else:
+                print(f"Disintegration test failed for Tablet '{tablet.name}'")
+
+if __name__ == "__main__":
+    tablets = [
+        Tablet("Tablet A", 500),
+        Tablet("Tablet B", 700),
+        Tablet("Tablet C", 600)
+    ]
+
+    disintegration_test = DisintegrationTest(tablets)
+    disintegration_test.run_test()
