@@ -1,0 +1,13 @@
+def calculate_bulk_density(mass, volume):
+    """
+    Calculate bulk density of a powder.
+
+    Args:
+        mass: Mass of the powder (in grams).
+        volume: Bulk volume of the powder (in cubic centimeters).
+
+    Returns:
+        Bulk density (in grams per cubic centimeter).
+    """
+    bulk_density = mass / volume
+    return bulk_density
