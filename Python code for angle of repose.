@@ -1,0 +1,16 @@
+import math
+
+def calculate_angle_of_repose(height, radius):
+    """
+    Calculate the angle of repose of a powder pile.
+
+    Args:
+        height: Height of the powder pile (in centimeters).
+        radius: Radius of the powder pile base (in centimeters).
+
+    Returns:
+        Angle of repose (in degrees).
+    """
+    angle_radians = math.atan(height / radius)
+    angle_degrees = math.degrees(angle_radians)
+    return angle_degrees
