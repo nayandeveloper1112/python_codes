@@ -1,0 +1,13 @@
+def calculate_tapped_density(mass, volume):
+    """
+    Calculate tapped density of a powder.
+
+    Args:
+        mass: Mass of the powder (in grams).
+        volume: Tapped volume of the powder (in cubic centimeters).
+
+    Returns:
+        Tapped density (in grams per cubic centimeter).
+    """
+    tapped_density = mass / volume
+    return tapped_density
