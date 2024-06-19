@@ -1,0 +1,65 @@
+class Student:
+    def __init__(self, student_id, name):
+        self.student_id = student_id
+        self.name = name
+        self.test_scores = []
+
+    def enter_test_score(self, score):
+        self.test_scores.append(score)
+
+    def get_latest_score(self):
+        return self.test_scores[-1] if self.test_scores else None
+
+    def get_average_score(self):
+        return sum(self.test_scores) / len(self.test_scores) if self.test_scores else 0
+
+class TestManagement:
+    def __init__(self, students):
+        self.students = students
+
+    def enter_scores_for_all(self):
+        for student in self.students:
+            while True:
+                try:
+                    score = float(input(f"Enter score for {student.name} (ID: {student.student_id}): "))
+                    student.enter_test_score(score)
+                    break
+                except ValueError:
+                    print("Invalid input. Please enter a valid number.")
+
+    def display_scores(self):
+        print("\nTest Scores of all students:")
+        for student in self.students:
+            scores = student.test_scores if student.test_scores else ["No scores entered"]
+            print(f"ID: {student.student_id}, Name: {student.name}, Scores: {scores}")
+
+    def calculate_average_score(self):
+        total_score = 0
+        count = 0
+        for student in self.students:
+            if student.test_scores:
+                total_score += sum(student.test_scores)
+                count += len(student.test_scores)
+        average = total_score / count if count > 0 else 0
+        print(f"\nAverage score of the class: {average:.2f}")
+
+    def find_highest_and_lowest_score(self):
+        highest_score = -float('inf')
+        lowest_score = float('inf')
+        highest_student = None
+        lowest_student = None
+
+        for student in self.students:
+            if student.test_scores:
+                max_score = max(student.test_scores)
+                min_score = min(student.test_scores)
+                if max_score > highest_score:
+                    highest_score = max_score
+                    highest_student = student
+                if min_score < lowest_score:
+                    lowest_score = min_score
+                    lowest_student = student
+
+        print("\nHighest and Lowest Scores:")
+        if highest_student:
+            print(f"Highest score: {highest_score} by {highest_student.name} (
