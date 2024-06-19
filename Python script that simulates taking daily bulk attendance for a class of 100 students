@@ -1,0 +1,64 @@
+class Student:
+    def __init__(self, student_id, name):
+        self.student_id = student_id
+        self.name = name
+        self.is_present = False
+
+    def mark_present(self):
+        self.is_present = True
+
+    def mark_absent(self):
+        self.is_present = False
+
+class Attendance:
+    def __init__(self, students):
+        self.students = students
+
+    def mark_all_present(self):
+        for student in self.students:
+            student.mark_present()
+        print("All students have been marked as present.")
+
+    def mark_all_absent(self):
+        for student in self.students:
+            student.mark_absent()
+        print("All students have been marked as absent.")
+
+    def display_attendance(self):
+        print("\nAttendance for today:")
+        for student in self.students:
+            status = "Present" if student.is_present else "Absent"
+            print(f"ID: {student.student_id}, Name: {student.name}, Status: {status}")
+
+if __name__ == "__main__":
+    # Initialize students
+    students = [Student(student_id=i+1, name=f"Student {i+1}") for i in range(100)]
+
+    # Create an instance of Attendance
+    attendance = Attendance(students)
+
+    # Main loop to mark attendance
+    while True:
+        print("\nAttendance Module")
+        print("1. Mark All Present")
+        print("2. Mark All Absent")
+        print("3. Display Attendance")
+        print("4. Exit")
+
+        choice = input("Enter your choice: ")
+
+        if choice == '1':
+            attendance.mark_all_present()
+
+        elif choice == '2':
+            attendance.mark_all_absent()
+
+        elif choice == '3':
+            attendance.display_attendance()
+
+        elif choice == '4':
+            print("Exiting the Attendance Module.")
+            break
+
+        else:
+            print("Invalid choice. Please enter a valid option.")
