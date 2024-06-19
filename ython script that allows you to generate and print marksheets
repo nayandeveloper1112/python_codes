@@ -1,0 +1,73 @@
+class Student:
+    def __init__(self, student_id, name):
+        self.student_id = student_id
+        self.name = name
+        self.marks = {}
+
+    def enter_marks(self, subject, marks):
+        self.marks[subject] = marks
+
+    def get_total_marks(self):
+        return sum(self.marks.values())
+
+    def get_average_marks(self):
+        return self.get_total_marks() / len(self.marks) if self.marks else 0
+
+    def display_marksheet(self):
+        print(f"\nMarksheet for {self.name} (ID: {self.student_id})")
+        for subject, marks in self.marks.items():
+            print(f"{subject}: {marks}")
+        print(f"Total Marks: {self.get_total_marks()}")
+        print(f"Average Marks: {self.get_average_marks():.2f}")
+
+class MarksheetModule:
+    def __init__(self, students):
+        self.students = students
+
+    def enter_marks_for_all(self, subjects):
+        for student in self.students:
+            print(f"\nEntering marks for {student.name} (ID: {student.student_id})")
+            for subject in subjects:
+                while True:
+                    try:
+                        marks = float(input(f"Enter marks for {subject}: "))
+                        student.enter_marks(subject, marks)
+                        break
+                    except ValueError:
+                        print("Invalid input. Please enter a valid number.")
+
+    def display_all_marksheets(self):
+        for student in self.students:
+            student.display_marksheet()
+
+if __name__ == "__main__":
+    # Initialize subjects
+    subjects = ["Math", "Physics", "Chemistry", "English", "Computer Science"]
+
+    # Initialize students
+    students = [Student(student_id=i+1, name=f"Student {i+1}") for i in range(100)]
+
+    # Create an instance of MarksheetModule
+    marksheet_module = MarksheetModule(students)
+
+    # Main loop to enter marks and display marksheets
+    while True:
+        print("\nMarksheet Module")
+        print("1. Enter Marks for All Students")
+        print("2. Display All Marksheets")
+        print("3. Exit")
+
+        choice = input("Enter your choice: ")
+
+        if choice == '1':
+            marksheet_module.enter_marks_for_all(subjects)
+
+        elif choice == '2':
+            marksheet_module.display_all_marksheets()
+
+        elif choice == '3':
+            print("Exiting the Marksheet Module.")
+            break
+
+        else:
+            print("Inv
