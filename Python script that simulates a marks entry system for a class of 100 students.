@@ -1,0 +1,61 @@
+class Student:
+    def __init__(self, student_id, name):
+        self.student_id = student_id
+        self.name = name
+        self.marks = None
+
+    def enter_marks(self, marks):
+        self.marks = marks
+
+class MarksEntry:
+    def __init__(self, students):
+        self.students = students
+
+    def enter_marks_for_all(self):
+        for student in self.students:
+            while True:
+                try:
+                    marks = float(input(f"Enter marks for {student.name} (ID: {student.student_id}): "))
+                    student.enter_marks(marks)
+                    break
+                except ValueError:
+                    print("Invalid input. Please enter a valid number.")
+
+    def display_marks(self):
+        print("\nMarks of all students:")
+        for student in self.students:
+            marks = student.marks if student.marks is not None else "Not Entered"
+            print(f"ID: {student.student_id}, Name: {student.name}, Marks: {marks}")
+
+    def calculate_average_marks(self):
+        total_marks = 0
+        count = 0
+        for student in self.students:
+            if student.marks is not None:
+                total_marks += student.marks
+                count += 1
+        average = total_marks / count if count > 0 else 0
+        print(f"\nAverage marks of the class: {average:.2f}")
+
+if __name__ == "__main__":
+    # Initialize students
+    students = [Student(student_id=i+1, name=f"Student {i+1}") for i in range(100)]
+
+    # Create an instance of MarksEntry
+    marks_entry = MarksEntry(students)
+
+    # Main loop to enter and display marks
+    while True:
+        print("\nMarks Entry Module")
+        print("1. Enter Marks for All Students")
+        print("2. Display Marks of All Students")
+        print("3. Calculate Average Marks")
+        print("4. Exit")
+
+        choice = input("Enter your choice: ")
+
+        if choice == '1':
+            marks_entry.enter_marks_for_all()
+
+        elif choice == '2':
+            marks
