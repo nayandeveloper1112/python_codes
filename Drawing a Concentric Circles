@@ -1,0 +1,15 @@
+import turtle
+
+# Set up the turtle
+t = turtle.Turtle()
+t.speed(1)
+
+# Draw concentric circles
+for i in range(10, 100, 10):
+    t.circle(i)  # Draw a circle with increasing radius
+    t.penup()
+    t.sety(t.ycor() - 10)  # Move turtle down
+    t.pendown()
+
+# Complete the drawing
+turtle.done()
