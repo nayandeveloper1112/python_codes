@@ -1,0 +1,11 @@
+import turtle
+
+# Set up the turtle
+t = turtle.Turtle()
+t.speed(1)
+
+# Draw a circle
+t.circle(100)  # Draw a circle with radius 100 units
+
+# Complete the drawing
+turtle.done()
