@@ -1,0 +1,13 @@
+import turtle
+
+# Set up the turtle
+t = turtle.Turtle()
+t.speed(1)
+
+# Draw a hexagon
+for _ in range(6):
+    t.forward(100)  # Move forward by 100 units
+    t.left(60)      # Turn left by 60 degrees
+
+# Complete the drawing
+turtle.done()
