@@ -1,0 +1,13 @@
+import turtle
+
+# Set up the turtle
+t = turtle.Turtle()
+t.speed(1)
+
+# Draw a square
+for _ in range(4):
+    t.forward(100)  # Move forward by 100 units
+    t.right(90)     # Turn right by 90 degrees
+
+# Complete the drawing
+turtle.done()
