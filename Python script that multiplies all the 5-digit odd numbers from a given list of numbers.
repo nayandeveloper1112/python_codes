@@ -1,0 +1,21 @@
+def multiply_odd_numbers(numbers):
+    product = 1
+    has_odd = False
+
+    for num in numbers:
+        if 10000 <= num <= 99999 and num % 2 != 0:  # Check if it's a 5-digit odd number
+            product *= num
+            has_odd = True
+
+    if not has_odd:
+        return "No 5-digit odd numbers found in the list."
+    
+    return product
+
+if __name__ == "__main__":
+    # Example list of numbers
+    numbers = [12345, 67891, 11111, 22222, 33333, 44444, 55555]
+
+    # Multiply 5-digit odd numbers and print the result
+    result = multiply_odd_numbers(numbers)
+    print("The product of all 5-digit odd numbers in the list is:", result)
