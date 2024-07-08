@@ -1,0 +1,92 @@
+import pandas as pd
+
+class Student:
+    def __init__(self, student_id, name):
+        self.student_id = student_id
+        self.name = name
+        self.marks = {}
+
+    def enter_marks(self, subject, marks):
+        self.marks[subject] = marks
+
+    def get_total_marks(self):
+        return sum(self.marks.values())
+
+    def get_average_marks(self):
+        return self.get_total_marks() / len(self.marks) if self.marks else 0
+
+class MarksheetModule:
+    def __init__(self, students):
+        self.students = students
+
+    def enter_marks_for_all(self, subjects):
+        for student in self.students:
+            print(f"\nEntering marks for {student.name} (ID: {student.student_id})")
+            for subject in subjects:
+                while True:
+                    try:
+                        marks = float(input(f"Enter marks for {subject}: "))
+                        student.enter_marks(subject, marks)
+                        break
+                    except ValueError:
+                        print("Invalid input. Please enter a valid number.")
+
+    def generate_consolidated_marksheet(self):
+        data = {
+            "Student ID": [],
+            "Name": [],
+        }
+        subjects = set()
+        for student in self.students:
+            subjects.update(student.marks.keys())
+        
+        subjects = sorted(subjects)
+        for subject in subjects:
+            data[subject] = []
+        
+        data["Total Marks"] = []
+        data["Average Marks"] = []
+
+        for student in self.students:
+            data["Student ID"].append(student.student_id)
+            data["Name"].append(student.name)
+            for subject in subjects:
+                data[subject].append(student.marks.get(subject, 0))
+            data["Total Marks"].append(student.get_total_marks())
+            data["Average Marks"].append(student.get_average_marks())
+        
+        df = pd.DataFrame(data)
+        df.to_csv("consolidated_marksheet.csv", index=False)
+        print("Consolidated marksheet has been generated and saved to 'consolidated_marksheet.csv'")
+
+if __name__ == "__main__":
+    # Initialize subjects
+    subjects = ["Math", "Physics", "Chemistry", "English", "Computer Science"]
+
+    # Initialize students
+    students = [Student(student_id=i+1, name=f"Student {i+1}") for i in range(3)]  # Change to 100 for 100 students
+
+    # Create an instance of MarksheetModule
+    marksheet_module = MarksheetModule(students)
+
+    # Main loop to enter marks and display marksheets
+    while True:
+        print("\nMarksheet Module")
+        print("1. Enter Marks for All Students")
+        print("2. Generate Consolidated Marksheet")
+        print("3. Exit")
+
+        choice = input("Enter your choice: ")
+
+        if choice == '1':
+            marksheet_module.enter_marks_for_all(subjects)
+
+        elif choice == '2':
+            marksheet_module.generate_consolidated_marksheet()
+
+        elif choice == '3':
+            print("Exiting the Marksheet Module.")
+            break
+
+        else:
+            print("Invalid choice. Please enter a valid option.")
