@@ -1,0 +1,33 @@
+class Bill:
+    def __init__(self):
+        self.items = []
+        self.gst_rate = 18  # GST rate in percentage (can be adjusted as needed)
+
+    def add_item(self, name, price, quantity):
+        self.items.append({"name": name, "price": price, "quantity": quantity})
+
+    def calculate_total(self):
+        total_before_gst = sum(item["price"] * item["quantity"] for item in self.items)
+        gst_amount = (total_before_gst * self.gst_rate) / 100
+        total_after_gst = total_before_gst + gst_amount
+        return total_before_gst, gst_amount, total_after_gst
+
+    def generate_bill(self):
+        print("-------- Bill --------")
+        print(f"{'Item':<20}{'Price':<10}{'Quantity':<10}{'Total':<10}")
+        for item in self.items:
+            total = item["price"] * item["quantity"]
+            print(f"{item['name']:<20}{item['price']:<10}{item['quantity']:<10}{total:<10}")
+        total_before_gst, gst_amount, total_after_gst = self.calculate_total()
+        print("\n----------------------")
+        print(f"Total before GST: ₹{total_before_gst:.2f}")
+        print(f"GST @ {self.gst_rate}%: ₹{gst_amount:.2f}")
+        print(f"Total after GST: ₹{total_after_gst:.2f}")
+        print("----------------------")
+
+# Example usage:
+bill = Bill()
+bill.add_item("Item A", 100, 2)
+bill.add_item("Item B", 150, 1)
+bill.add_item("Item C", 50, 4)
+bill.generate_bill()
