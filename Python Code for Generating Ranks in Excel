@@ -1,0 +1,20 @@
+import pandas as pd
+
+def generate_ranks(input_filename, output_filename, column_to_rank):
+    # Load data from the Excel file into a pandas DataFrame
+    df = pd.read_excel(input_filename)
+
+    # Calculate ranks based on the specified column
+    # The 'dense' method assigns ranks such that equal values receive the same rank
+    df['Rank'] = df[column_to_rank].rank(method='dense', ascending=False)
+
+    # Save the updated DataFrame to a new Excel file
+    df.to_excel(output_filename, index=False)
+    print(f"Ranks generated successfully and saved as {output_filename}")
+
+# Example usage
+input_filename = 'data.xlsx'        # Input Excel file
+output_filename = 'ranked_data.xlsx'  # Output Excel file
+column_to_rank = 'Score'            # Column to rank by
+
+generate_ranks(input_filename, output_filename, column_to_rank)
