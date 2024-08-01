@@ -1,0 +1,87 @@
+from reportlab.lib.pagesizes import A4
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
+
+class InvoiceGenerator:
+    def __init__(self, filename, company_details, client_details, items, gst_rate):
+        self.filename = filename
+        self.company_details = company_details
+        self.client_details = client_details
+        self.items = items
+        self.gst_rate = gst_rate
+
+    def generate_invoice(self):
+        # Create a PDF document
+        pdf = SimpleDocTemplate(self.filename, pagesize=A4)
+        elements = []
+
+        # Add company and client details
+        styles = getSampleStyleSheet()
+        company_info = Paragraph(f"<b>{self.company_details['name']}</b><br/>{self.company_details['address']}<br/>{self.company_details['contact']}", styles['Normal'])
+        client_info = Paragraph(f"<b>Bill To:</b><br/>{self.client_details['name']}<br/>{self.client_details['address']}<br/>{self.client_details['contact']}", styles['Normal'])
+        
+        elements.append(company_info)
+        elements.append(client_info)
+
+        # Add a space between details and table
+        elements.append(Paragraph("<br/><br/>", styles['Normal']))
+
+        # Create the invoice table
+        data = [["Item", "Price", "Quantity", "Total"]]
+        total_before_gst = 0
+
+        for item in self.items:
+            total = item['price'] * item['quantity']
+            data.append([item['name'], f"₹{item['price']:.2f}", item['quantity'], f"₹{total:.2f}"])
+            total_before_gst += total
+
+        gst_amount = (total_before_gst * self.gst_rate) / 100
+        total_after_gst = total_before_gst + gst_amount
+
+        # Add totals to the table
+        data.append(["", "", "Total Before GST", f"₹{total_before_gst:.2f}"])
+        data.append(["", "", f"GST @ {self.gst_rate}%", f"₹{gst_amount:.2f}"])
+        data.append(["", "", "Total After GST", f"₹{total_after_gst:.2f}"])
+
+        # Create the table with style
+        table = Table(data)
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.gray),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black),
+        ]))
+
+        elements.append(table)
+
+        # Build the PDF
+        pdf.build(elements)
+        print(f"Invoice generated successfully and saved as {self.filename}")
+
+# Example usage
+company_details = {
+    "name": "ABC Pvt Ltd",
+    "address": "123 Business Park, City, Country",
+    "contact": "+91 12345 67890"
+}
+
+client_details = {
+    "name": "John Doe",
+    "address": "789 Residential Area, City, Country",
+    "contact": "+91 98765 43210"
+}
+
+items = [
+    {"name": "Item A", "price": 100, "quantity": 2},
+    {"name": "Item B", "price": 150, "quantity": 1},
+    {"name": "Item C", "price": 50, "quantity": 4},
+]
+
+gst_rate = 18  # GST rate in percentage
+
+invoice = InvoiceGenerator("invoice.pdf", company_details, client_details, items, gst_rate)
+invoice.generate_invoice()
