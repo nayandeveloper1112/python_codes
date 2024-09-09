@@ -1,0 +1,23 @@
+import pandas as pd
+import pdfkit
+
+def excel_to_pdf(excel_file, sheet_name='Sheet1', output_pdf='output.pdf'):
+    # Step 1: Read the Excel file
+    df = pd.read_excel(excel_file, sheet_name=sheet_name)
+
+    # Step 2: Convert DataFrame to HTML (this step is necessary for the PDF conversion)
+    html_data = df.to_html(index=False)
+
+    # Step 3: Convert HTML to PDF using pdfkit
+    pdfkit.from_string(html_data, output_pdf)
+
+    print(f"Excel sheet {sheet_name} has been converted to {output_pdf}")
+
+if __name__ == "__main__":
+    # Example usage
+    excel_file = "example.xlsx"   # Path to your Excel file
+    output_pdf = "output.pdf"     # Output PDF file name
+    sheet_name = "Sheet1"         # Sheet you want to convert (default is 'Sheet1')
+
+    # Convert the Excel sheet to PDF
+    excel_to_pdf(excel_file, sheet_name, output_pdf)
