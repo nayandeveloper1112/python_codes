@@ -1,0 +1,43 @@
+import fitz  # PyMuPDF
+
+def add_signature_to_pdf(pdf_path, signature_image, output_pdf, page_number=0, x=100, y=100, width=150, height=75):
+    """
+    Adds a signature image to a specified page of a PDF.
+
+    :param pdf_path: The path of the PDF to which the signature will be added.
+    :param signature_image: The path to the signature image (e.g., PNG, JPG).
+    :param output_pdf: The path to save the PDF with the signature added.
+    :param page_number: The page number to add the signature (default is the first page, page_number=0).
+    :param x: The x-coordinate to place the signature.
+    :param y: The y-coordinate to place the signature.
+    :param width: The width of the signature image.
+    :param height: The height of the signature image.
+    """
+    # Open the existing PDF
+    pdf_document = fitz.open(pdf_path)
+
+    # Get the specified page
+    page = pdf_document.load_page(page_number)
+
+    # Define the rectangle where the signature will be placed (x, y, width, height)
+    rect = fitz.Rect(x, y, x + width, y + height)
+
+    # Add the image (signature) to the PDF in the specified rectangle
+    page.insert_image(rect, filename=signature_image)
+
+    # Save the modified PDF to a new file
+    pdf_document.save(output_pdf)
+
+    # Close the document
+    pdf_document.close()
+    print(f"Signature added to {output_pdf}")
+
+
+if __name__ == "__main__":
+    # Paths
+    pdf_path = "document.pdf"  # Input PDF file
+    signature_image = "signature.png"  # Signature image file
+    output_pdf = "signed_document.pdf"  # Output PDF file with the signature
+
+    # Call the function to add a signature to the PDF
+    add_signature_to_pdf(pdf_path, signature_image, output_pdf, page_number=0, x=100, y=100, width=150, height=75)
