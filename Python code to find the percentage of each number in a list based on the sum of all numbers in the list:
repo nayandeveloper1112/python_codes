@@ -1,0 +1,20 @@
+def calculate_percentage(numbers):
+    total_sum = sum(numbers)  # Calculate the total sum of all numbers in the list
+    percentages = []
+
+    for num in numbers:
+        percentage = (num / total_sum) * 100  # Calculate the percentage
+        percentages.append(percentage)
+
+    return percentages
+
+if __name__ == "__main__":
+    # Example list of numbers
+    numbers = [50, 100, 150, 200, 250]
+
+    # Calculate the percentage for each number in the list
+    percentages = calculate_percentage(numbers)
+
+    # Print each number and its corresponding percentage
+    for num, percent in zip(numbers, percentages):
+        print(f"Number: {num} - Percentage: {percent:.2f}%")
