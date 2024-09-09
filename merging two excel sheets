@@ -1,0 +1,25 @@
+import pandas as pd
+
+def merge_excel_sheets(file1, file2, sheet_name1='Sheet1', sheet_name2='Sheet1', merge_column='ID'):
+    # Read both Excel files
+    df1 = pd.read_excel(file1, sheet_name=sheet_name1)
+    df2 = pd.read_excel(file2, sheet_name=sheet_name2)
+
+    # Merge the two dataframes based on the common column
+    merged_df = pd.merge(df1, df2, on=merge_column, how='inner')  # Change 'inner' to 'outer', 'left', or 'right' for other types of joins
+
+    return merged_df
+
+if __name__ == "__main__":
+    # Example file paths (change these to your actual file paths)
+    file1 = "data1.xlsx"
+    file2 = "data2.xlsx"
+
+    # Merge the two sheets and display the result
+    merged_data = merge_excel_sheets(file1, file2, sheet_name1='Sheet1', sheet_name2='Sheet1', merge_column='ID')
+    print("Merged Data:")
+    print(merged_data)
+
+    # Optionally, save the merged result to a new Excel file
+    merged_data.to_excel("merged_output.xlsx", index=False)
+    print("\nMerged data has been saved to 'merged_output.xlsx'")
