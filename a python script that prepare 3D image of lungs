@@ -1,0 +1,42 @@
+pip install numpy matplotlib
+import numpy as np
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+
+# Function to generate a 3D ellipsoid (used to represent lungs)
+def generate_ellipsoid(radius_x, radius_y, radius_z, center=(0, 0, 0), num_points=100):
+    u = np.linspace(0, 2 * np.pi, num_points)
+    v = np.linspace(0, np.pi, num_points)
+    
+    x = center[0] + radius_x * np.outer(np.cos(u), np.sin(v))
+    y = center[1] + radius_y * np.outer(np.sin(u), np.sin(v))
+    z = center[2] + radius_z * np.outer(np.ones(np.size(u)), np.cos(v))
+    
+    return x, y, z
+
+# Create 3D plot
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+
+# Parameters for lung shapes (two ellipsoids to represent two lungs)
+lung_radius_x = 5
+lung_radius_y = 7
+lung_radius_z = 8
+
+# Left lung (slightly shifted to the left)
+x1, y1, z1 = generate_ellipsoid(lung_radius_x, lung_radius_y, lung_radius_z, center=(-7, 0, 0))
+
+# Right lung (slightly shifted to the right)
+x2, y2, z2 = generate_ellipsoid(lung_radius_x, lung_radius_y, lung_radius_z, center=(7, 0, 0))
+
+# Plot the 3D lungs
+ax.plot_surface(x1, y1, z1, color='blue', alpha=0.6)
+ax.plot_surface(x2, y2, z2, color='red', alpha=0.6)
+
+# Add labels and title
+ax.set_xlabel('X axis')
+ax.set_ylabel('Y axis')
+ax.set_zlabel('Z axis')
+ax.set_title('3D Representation of Lungs')
+
+plt.show()
