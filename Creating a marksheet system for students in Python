@@ -1,0 +1,68 @@
+class Student:
+    def __init__(self, name, roll_number):
+        self.name = name
+        self.roll_number = roll_number
+        self.subjects = {}
+        self.total_marks = 0
+        self.percentage = 0
+        self.grade = ""
+    
+    def add_subject_marks(self, subject, marks):
+        self.subjects[subject] = marks
+        self.total_marks += marks
+    
+    def calculate_percentage_and_grade(self, total_subject_marks):
+        # Calculate percentage
+        self.percentage = (self.total_marks / total_subject_marks) * 100
+        
+        # Assign grade based on percentage
+        if self.percentage >= 90:
+            self.grade = 'A+'
+        elif self.percentage >= 80:
+            self.grade = 'A'
+        elif self.percentage >= 70:
+            self.grade = 'B'
+        elif self.percentage >= 60:
+            self.grade = 'C'
+        elif self.percentage >= 50:
+            self.grade = 'D'
+        else:
+            self.grade = 'F'
+    
+    def display_marksheet(self):
+        print(f"\n--- Marksheet for {self.name} (Roll No: {self.roll_number}) ---")
+        print("Subject-wise Marks:")
+        for subject, marks in self.subjects.items():
+            print(f"{subject}: {marks}")
+        print(f"Total Marks: {self.total_marks}")
+        print(f"Percentage: {self.percentage:.2f}%")
+        print(f"Grade: {self.grade}")
+        
+
+def main():
+    print("Enter student details and marks:\n")
+    
+    # Input student information
+    name = input("Enter student's name: ")
+    roll_number = input("Enter student's roll number: ")
+    
+    # Create student object
+    student = Student(name, roll_number)
+    
+    # Define the subjects and get marks for each subject
+    subjects = ["Math", "Science", "English", "History", "Geography"]
+    total_subject_marks = 500  # Assuming each subject is out of 100
+    
+    for subject in subjects:
+        marks = int(input(f"Enter marks for {subject} (out of 100): "))
+        student.add_subject_marks(subject, marks)
+    
+    # Calculate percentage and grade
+    student.calculate_percentage_and_grade(total_subject_marks)
+    
+    # Display the marksheet
+    student.display_marksheet()
+
+
+if __name__ == "__main__":
+    main()
