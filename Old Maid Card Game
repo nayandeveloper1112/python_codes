@@ -1,0 +1,79 @@
+import random
+
+# Define a simple deck of cards
+class Deck:
+    def __init__(self):
+        self.cards = [str(i) for i in range(1, 14)] * 4  # 13 cards, 4 times (no suits)
+        random.shuffle(self.cards)
+
+    def draw_card(self):
+        return self.cards.pop()
+
+# Function to deal the cards to two players
+def deal_cards(deck):
+    player1_hand = []
+    player2_hand = []
+    while len(deck.cards) > 0:
+        player1_hand.append(deck.draw_card())
+        player2_hand.append(deck.draw_card())
+    return player1_hand, player2_hand
+
+# Function to remove pairs from the player's hand
+def remove_pairs(hand):
+    hand.sort()
+    i = 0
+    while i < len(hand) - 1:
+        if hand[i] == hand[i + 1]:
+            hand.pop(i)  # Remove the pair
+            hand.pop(i)
+            i = 0  # Restart checking for pairs
+        else:
+            i += 1
+    return hand
+
+# Function to check if the game has ended
+def game_over(player1_hand, player2_hand):
+    return len(player1_hand) == 1 or len(player2_hand) == 1
+
+# Function to simulate the Old Maid game
+def old_maid_game():
+    deck = Deck()
+    player1_hand, player2_hand = deal_cards(deck)
+
+    # Remove pairs from initial hands
+    player1_hand = remove_pairs(player1_hand)
+    player2_hand = remove_pairs(player2_hand)
+
+    turn = 1
+    while not game_over(player1_hand, player2_hand):
+        if turn % 2 == 1:  # Player 1's turn
+            print(f"\nPlayer 1's turn. Current hand: {player1_hand}")
+            card_to_draw = random.choice(player2_hand)
+            print(f"Player 1 draws a card: {card_to_draw}")
+            player1_hand.append(card_to_draw)
+            player2_hand.remove(card_to_draw)
+        else:  # Player 2's turn
+            print(f"\nPlayer 2's turn. Current hand: {player2_hand}")
+            card_to_draw = random.choice(player1_hand)
+            print(f"Player 2 draws a card: {card_to_draw}")
+            player2_hand.append(card_to_draw)
+            player1_hand.remove(card_to_draw)
+
+        # Remove pairs after each turn
+        player1_hand = remove_pairs(player1_hand)
+        player2_hand = remove_pairs(player2_hand)
+
+        print(f"Player 1's hand: {player1_hand}")
+        print(f"Player 2's hand: {player2_hand}")
+
+        turn += 1
+
+    # Determine winner
+    if len(player1_hand) == 1:
+        print("\nPlayer 1 is the Old Maid!")
+    else:
+        print("\nPlayer 2 is the Old Maid!")
+
+# Start the game
+if __name__ == "__main__":
+    old_maid_game()
