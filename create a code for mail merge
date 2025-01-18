@@ -1,0 +1,43 @@
+pip install python-docx pandas
+import pandas as pd
+from docx import Document
+
+# Function to perform mail merge
+def mail_merge(template_file, data_file, output_folder):
+    # Load the template document
+    doc = Document(template_file)
+
+    # Load the CSV data
+    data = pd.read_csv(data_file)
+
+    # Iterate through each row in the CSV file (each recipient)
+    for index, row in data.iterrows():
+        # Create a new copy of the template for each row
+        doc_copy = Document(template_file)
+
+        # Iterate through all the paragraphs in the document
+        for paragraph in doc_copy.paragraphs:
+            # Replace placeholders in the paragraph text with actual values from the row
+            for key, value in row.items():
+                placeholder = f'{{{{ {key} }}}}'
+                if placeholder in paragraph.text:
+                    paragraph.text = paragraph.text.replace(placeholder, str(value))
+
+        # Save the personalized document with a new name
+        output_file = f'{output_folder}/letter_{row["Name"]}.docx'
+        doc_copy.save(output_file)
+        print(f"Generated letter for {row['Name']} and saved to {output_file}")
+
+# Main program
+if __name__ == "__main__":
+    # Template Word file with placeholders
+    template_file = 'template_letter.docx'
+    
+    # CSV file with recipient data
+    data_file = 'recipients_data.csv'
+    
+    # Folder to save the generated letters
+    output_folder = 'output_letters'
+    
+    # Perform the mail merge
+    mail_merge(template_file, data_file, output_folder)
