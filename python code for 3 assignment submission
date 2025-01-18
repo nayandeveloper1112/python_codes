@@ -1,0 +1,52 @@
+# Function to take attendance
+def take_attendance():
+    presence = input("Is the student present for the class? (yes/no): ").strip().lower()
+    if presence == 'yes':
+        return True
+    else:
+        return False
+
+# Function to input the scores of the assignments
+def input_scores():
+    scores = []
+    for i in range(1, 4):
+        while True:
+            try:
+                score = float(input(f"Enter the score for assignment {i} (0-100): "))
+                if 0 <= score <= 100:
+                    scores.append(score)
+                    break
+                else:
+                    print("Please enter a score between 0 and 100.")
+            except ValueError:
+                print("Invalid input. Please enter a valid number.")
+    return scores
+
+# Function to calculate the average score
+def calculate_average(scores):
+    return sum(scores) / len(scores)
+
+# Main function to handle the process
+def main():
+    print("Welcome to the assignment submission and attendance system!")
+    
+    # Take attendance
+    if not take_attendance():
+        print("Student is not present. No scores recorded.")
+        return
+
+    # Input scores for 3 assignments
+    scores = input_scores()
+
+    # Calculate average score
+    average_score = calculate_average(scores)
+    
+    # Output the results
+    print("\nAssignment Scores:")
+    for i, score in enumerate(scores, 1):
+        print(f"Assignment {i}: {score}")
+    
+    print(f"\nAverage Score: {average_score:.2f}")
+
+if __name__ == "__main__":
+    main()
