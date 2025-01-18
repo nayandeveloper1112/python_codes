@@ -1,0 +1,30 @@
+# Sample data of colleges and their district codes
+college_data = [
+    {"college_name": "ABC College", "district_code": "D101"},
+    {"college_name": "XYZ University", "district_code": "D102"},
+    {"college_name": "Tech Institute", "district_code": "D103"},
+    {"college_name": "National College", "district_code": "D104"},
+    {"college_name": "City College", "district_code": "D105"},
+    {"college_name": "State University", "district_code": "D106"}
+]
+
+# Function to display the college list with district codes
+def display_college_list(college_data):
+    print("College Name\t\t\tDistrict Code")
+    print("----------------------------------------------")
+    for college in college_data:
+        print(f"{college['college_name']}\t\t{college['district_code']}")
+
+# Function to add a new college to the list
+def add_college(college_name, district_code):
+    new_college = {"college_name": college_name, "district_code": district_code}
+    college_data.append(new_college)
+
+# Display the current college list
+display_college_list(college_data)
+
+# Example of adding a new college to the list
+add_college("Science and Tech College", "D107")
+
+print("\nUpdated College List:")
+display_college_list(college_data)
