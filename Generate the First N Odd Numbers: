@@ -1,0 +1,14 @@
+# Function to generate the first N odd numbers
+def generate_odd_numbers(n):
+    odd_numbers = []
+    count = 1
+    while len(odd_numbers) < n:
+        if count % 2 != 0:
+            odd_numbers.append(count)
+        count += 1
+    return odd_numbers
+
+# Example usage
+n = int(input("How many odd numbers do you want to generate? "))
+odd_numbers = generate_odd_numbers(n)
+print(f"The first {n} odd numbers are: {odd_numbers}")
