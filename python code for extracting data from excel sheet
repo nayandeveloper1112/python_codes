@@ -1,0 +1,24 @@
+import pandas as pd
+
+def extract_data_from_excel(file_path, sheet_name=0):
+    """
+    Extracts data from an Excel sheet and returns it as a DataFrame.
+    
+    :param file_path: Path to the Excel file
+    :param sheet_name: Name or index of the sheet to read (default is the first sheet)
+    :return: DataFrame containing the extracted data
+    """
+    try:
+        df = pd.read_excel(file_path, sheet_name=sheet_name)
+        return df
+    except Exception as e:
+        print(f"Error: {e}")
+        return None
+
+# Example usage
+if __name__ == "__main__":
+    file_path = "data.xlsx"  # Change this to your file path
+    sheet_name = 0  # Change this to your sheet name or index if needed
+    data = extract_data_from_excel(file_path, sheet_name)
+    if data is not None:
+        print(data.head())  # Print the first few rows
