@@ -1,0 +1,22 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+def create_heatmap(data, output_file="heatmap.png"):
+    """
+    Creates a heatmap from a numerical dataset and saves it as an image.
+    
+    :param data: 2D list or numpy array of numbers
+    :param output_file: Name of the output image file (default: heatmap.png)
+    """
+    plt.figure(figsize=(8, 6))
+    sns.heatmap(data, cmap="viridis", annot=True, fmt=".1f", linewidths=0.5)
+    plt.title("Heatmap of Numerical Data")
+    plt.savefig(output_file)
+    plt.show()
+
+# Example usage
+if __name__ == "__main__":
+    # Generate a random 10x10 matrix of numbers
+    data = np.random.rand(10, 10) * 100
+    create_heatmap(data, "generated_heatmap.png")
