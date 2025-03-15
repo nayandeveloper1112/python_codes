@@ -1,0 +1,23 @@
+import random
+import string
+
+def generate_password(length=12, use_digits=True, use_special_chars=True):
+    characters = string.ascii_letters
+    if use_digits:
+        characters += string.digits
+    if use_special_chars:
+        characters += string.punctuation
+    
+    password = ''.join(random.choice(characters) for _ in range(length))
+    return password
+
+def generate_name(letters, length=5):
+    if len(letters) != 3:
+        raise ValueError("Please provide exactly 3 letters.")
+    
+    name = ''.join(random.choice(letters) for _ in range(length))
+    return name.capitalize()
+
+# Example usage
+print("Generated Password:", generate_password(16))
+print("Generated Name:", generate_name("abc", 6))
