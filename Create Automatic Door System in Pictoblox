@@ -1,0 +1,49 @@
+#include <Servo.h>
+
+// Define pins
+const int trigPin = 9;
+const int echoPin = 10;
+const int servoPin = 6;
+
+Servo doorServo;
+
+// Distance threshold for detecting an object
+const int thresholdDistance = 20; // in cm
+const int doorOpenAngle = 90;
+const int doorCloseAngle = 0;
+
+void setup() {
+    pinMode(trigPin, OUTPUT);
+    pinMode(echoPin, INPUT);
+    doorServo.attach(servoPin);
+    doorServo.write(doorCloseAngle); // Ensure the door is closed at start
+    Serial.begin(9600);
+}
+
+long getDistance() {
+    digitalWrite(trigPin, LOW);
+    delayMicroseconds(2);
+    digitalWrite(trigPin, HIGH);
+    delayMicroseconds(10);
+    digitalWrite(trigPin, LOW);
+
+    long duration = pulseIn(echoPin, HIGH);
+    long distance = duration * 0.034 / 2; // Convert time to distance (cm)
+    return distance;
+}
+
+void loop() {
+    long distance = getDistance();
+    Serial.print("Distance: ");
+    Serial.print(distance);
+    Serial.println(" cm");
+
+    if (distance > 0 && distance < thresholdDistance) {
+        Serial.println("Person detected! Opening door...");
+        doorServo.write(doorOpenAngle);
+        delay(3000); // Door stays open for 3 seconds
+        Serial.println("Closing door...");
+        doorServo.write(doorCloseAngle);
+    }
+    delay(500); // Small delay to avoid sensor fluctuations
+}
