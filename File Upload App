@@ -1,0 +1,25 @@
+from flask import Flask, request, redirect, render_template_string
+import os
+
+app = Flask(__name__)
+UPLOAD_FOLDER = 'uploads'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+upload_form = '''
+<form method="POST" enctype="multipart/form-data">
+    <input type="file" name="file"><br>
+    <input type="submit" value="Upload">
+</form>
+'''
+
+@app.route('/', methods=['GET', 'POST'])
+def upload_file():
+    if request.method == 'POST':
+        f = request.files['file']
+        f.save(os.path.join(app.config['UPLOAD_FOLDER'], f.filename))
+        return f"File {f.filename} uploaded successfully!"
+    return render_template_string(upload_form)
+
+if __name__ == '__main__':
+    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+    app.run(debug=True)
