@@ -1,0 +1,17 @@
+from flask import Flask, jsonify, request
+
+app = Flask(__name__)
+notes = []
+
+@app.route('/notes', methods=['GET'])
+def get_notes():
+    return jsonify(notes)
+
+@app.route('/notes', methods=['POST'])
+def add_note():
+    note = request.json
+    notes.append(note)
+    return jsonify({"message": "Note added"}), 201
+
+if __name__ == '__main__':
+    app.run(debug=True)
