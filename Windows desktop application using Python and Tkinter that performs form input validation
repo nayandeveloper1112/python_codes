@@ -1,0 +1,50 @@
+import tkinter as tk
+from tkinter import messagebox
+import re
+
+# Function to validate the input fields
+def validate_form():
+    name = name_entry.get()
+    email = email_entry.get()
+    password = password_entry.get()
+
+    if not name.strip():
+        messagebox.showerror("Error", "Name cannot be empty.")
+        return
+
+    email_pattern = r'^[\w\.-]+@[\w\.-]+\.\w+$'
+    if not re.match(email_pattern, email):
+        messagebox.showerror("Error", "Invalid email format.")
+        return
+
+    if len(password) < 6:
+        messagebox.showerror("Error", "Password must be at least 6 characters long.")
+        return
+
+    messagebox.showinfo("Success", "Validation passed!")
+
+# Create main window
+root = tk.Tk()
+root.title("Form Validation")
+root.geometry("300x250")
+
+# Name
+tk.Label(root, text="Name:").pack(pady=5)
+name_entry = tk.Entry(root, width=30)
+name_entry.pack()
+
+# Email
+tk.Label(root, text="Email:").pack(pady=5)
+email_entry = tk.Entry(root, width=30)
+email_entry.pack()
+
+# Password
+tk.Label(root, text="Password:").pack(pady=5)
+password_entry = tk.Entry(root, width=30, show="*")
+password_entry.pack()
+
+# Submit button
+tk.Button(root, text="Validate", command=validate_form).pack(pady=20)
+
+# Start GUI loop
+root.mainloop()
