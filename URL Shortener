@@ -1,0 +1,81 @@
+import string
+import random
+from flask import Flask, request, redirect, render_template_string
+from flask_sqlalchemy import SQLAlchemy
+
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///urls.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
+
+class URL(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    original_url = db.Column(db.String(500), nullable=False)
+    short_code = db.Column(db.String(10), unique=True, nullable=False)
+
+def generate_short_code(length=6):
+    characters = string.ascii_letters + string.digits
+    return ''.join(random.choice(characters) for _ in range(length))
+
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    if request.method == 'POST':
+        original_url = request.form['url']
+        if not original_url:
+            return render_template_string(HTML_TEMPLATE, error="URL is required")
+        
+        existing_url = URL.query.filter_by(original_url=original_url).first()
+        if existing_url:
+            return render_template_string(HTML_TEMPLATE, short_url=request.host_url + existing_url.short_code)
+        
+        short_code = generate_short_code()
+        while URL.query.filter_by(short_code=short_code).first():
+            short_code = generate_short_code()
+        
+        new_url = URL(original_url=original_url, short_code=short_code)
+        db.session.add(new_url)
+        db.session.commit()
+        return render_template_string(HTML_TEMPLATE, short_url=request.host_url + short_code)
+    
+    return render_template_string(HTML_TEMPLATE)
+
+@app.route('/<short_code>')
+def redirect_url(short_code):
+    url = URL.query.filter_by(short_code=short_code).first()
+    if url:
+        return redirect(url.original_url)
+    return "URL not found", 404
+
+HTML_TEMPLATE = '''
+<!DOCTYPE html>
+<html>
+<head>
+    <title>URL Shortener</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
+        input[type="text"] { width: 300px; padding: 10px; }
+        input[type="submit"] { padding: 10px 20px; }
+        .error { color: red; }
+        .success { color: green; }
+    </style>
+</head>
+<body>
+    <h1>URL Shortener</h1>
+    <form method="post">
+        <input type="text" name="url" placeholder="Enter URL to shorten" required>
+        <input type="submit" value="Shorten">
+    </form>
+    {% if error %}
+        <p class="error">{{ error }}</p>
+    {% endif %}
+    {% if short_url %}
+        <p class="success">Shortened URL: <a href="{{ short_url }}">{{ short_url }}</a></p>
+    {% endif %}
+</body>
+</html>
+'''
+
+if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()
+    app.run(debug=True)
