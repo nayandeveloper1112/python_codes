@@ -1,0 +1,165 @@
+from flask import Flask, render_template_string, request, redirect, url_for
+from flask_sqlalchemy import SQLAlchemy
+
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///quiz.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
+
+class Question(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    text = db.Column(db.String(200), nullable=False)
+    option_a = db.Column(db.String(100), nullable=False)
+    option_b = db.Column(db.String(100), nullable=False)
+    option_c = db.Column(db.String(100), nullable=False)
+    option_d = db.Column(db.String(100), nullable=False)
+    correct_answer = db.Column(db.String(1), nullable=False)
+    explanation = db.Column(db.String(300), nullable=True)
+
+def populate_questions():
+    if Question.query.count() == 0:
+        sample_questions = [
+            Question(
+                text="What is the capital of France?",
+                option_a="Paris", option_b="London", option_c="Berlin", option_d="Madrid",
+                correct_answer="A", explanation="Paris is the capital city of France."
+            ),
+            Question(
+                text="Which planet is known as the Red Planet?",
+                option_a="Jupiter", option_b="Mars", option_c="Venus", option_d="Mercury",
+                correct_answer="B", explanation="Mars is called the Red Planet due to its reddish appearance."
+            ),
+            Question(
+                text="What is 2 + 2?",
+                option_a="3", option_b="4", option_c="5", option_d="6",
+                correct_answer="B", explanation="2 + 2 equals 4."
+            ),
+        ]
+        db.session.bulk_save_objects(sample_questions)
+        db.session.commit()
+
+@app.route('/')
+def index():
+    with app.app_context():
+        populate_questions()
+    return render_template_string(HOME_TEMPLATE)
+
+@app.route('/quiz', methods=['GET', 'POST'])
+def quiz():
+    if request.method == 'POST':
+        score = 0
+        total = Question.query.count()
+        results = []
+        
+        for question in Question.query.all():
+            user_answer = request.form.get(f'question-{question.id}')
+            is_correct = user_answer == question.correct_answer
+            if is_correct:
+                score += 1
+            results.append({
+                'text': question.text,
+                'user_answer': user_answer,
+                'correct_answer': question.correct_answer,
+                'is_correct': is_correct,
+                'explanation': question.explanation
+            })
+        
+        return render_template_string(RESULT_TEMPLATE, score=score, total=total, results=results)
+    
+    questions = Question.query.all()
+    return render_template_string(QUIZ_TEMPLATE, questions=questions)
+
+HOME_TEMPLATE = '''
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quiz Application</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background-color: #f4f4f4; }
+        h1 { text-align: center; color: #333; }
+        .start-button { display: block; width: 200px; margin: 20px auto; padding: 10px; text-align: center; 
+                        background-color: #0066cc; color: white; text-decoration: none; border-radius: 5px; }
+        .start-button:hover { background-color: #0055aa; }
+    </style>
+</head>
+<body>
+    <h1>Welcome to the Quiz Application</h1>
+    <a href="{{ url_for('quiz') }}" class="start-button">Start Quiz</a>
+</body>
+</html>
+'''
+
+QUIZ_TEMPLATE = '''
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quiz Application</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background-color: #f4f4f4; }
+        h1 { text-align: center; color: #333; }
+        .question { background: white; padding: 15px; margin-bottom: 15px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .question h2 { margin: 0 0 10px; font-size: 1.5em; }
+        .submit-button { padding: 10px 20px; background-color: #0066cc; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .submit-button:hover { background-color: #0055aa; }
+    </style>
+</head>
+<body>
+    <h1>Quiz</h1>
+    <form method="post">
+        {% for question in questions %}
+            <div class="question">
+                <h2>{{ question.text }}</h2>
+                <label><input type="radio" name="question-{{ question.id }}" value="A" required> {{ question.option_a }}</label><br>
+                <label><input type="radio" name="question-{{ question.id }}" value="B"> {{ question.option_b }}</label><br>
+                <label><input type="radio" name="question-{{ question.id }}" value="C"> {{ question.option_c }}</label><br>
+                <label><input type="radio" name="question-{{ question.id }}" value="D"> {{ question.option_d }}</label>
+            </div>
+        {% endfor %}
+        <input type="submit" value="Submit Answers" class="submit-button">
+    </form>
+</body>
+</html>
+'''
+
+RESULT_TEMPLATE = '''
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quiz Results</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background-color: #f4f4f4; }
+        h1 { text-align: center; color: #333; }
+        .result { background: white; padding: 15px; margin-bottom: 15px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .correct { color: green; }
+        .incorrect { color: red; }
+        .score { text-align: center; font-size: 1.2em; color: #333; }
+        .home-button { display: block; width: 200px; margin: 20px auto; padding: 10px; text-align: center; 
+                       background-color: #0066cc; color: white; text-decoration: none; border-radius: 5px; }
+        .home-button:hover { background-color: #0055aa; }
+    </style>
+</head>
+<body>
+    <h1>Quiz Results</h1>
+    <p class="score">Your Score: {{ score }} / {{ total }}</p>
+    {% for result in results %}
+        <div class="result">
+            <h2>{{ result.text }}</h2>
+            <p>Your Answer: {{ result.user_answer }} 
+               {% if result.is_correct %}
+                   <span class="correct">(Correct)</span>
+               {% else %}
+                   <span class="incorrect">(Incorrect, Correct: {{ result.correct_answer }})</span>
+               {% endif %}
+            </p>
+            <p>Explanation: {{ result.explanation }}</p>
+        </div>
+    {% endfor %}
+    <a href="{{ url_for('index') }}" class="home-button">Back to Home</a>
+</body>
+</html>
+'''
+
+if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()
+    app.run(debug=True)
