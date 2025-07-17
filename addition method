@@ -1,0 +1,149 @@
+from flask import Flask, render_template_string, request
+
+app = Flask(__name__)
+
+def add_vedic(num1, num2):
+    if num1 < 0 or num2 < 0:
+        return None, "Numbers must be positive integers."
+    
+    # Determine the base (smallest power of 10 greater than both numbers)
+    max_num = max(num1, num2)
+    base = 10 ** (len(str(max_num)) - 1)
+    if max_num >= base * 10:
+        base *= 10
+    
+    steps = []
+    steps.append(f"Step 1: Choose base as {base} (smallest power of 10 greater than or equal to both numbers).")
+    
+    # Calculate differences from the base
+    diff1 = base - num1
+    diff2 = base - num2
+    steps.append(f"Step 2: Find differences from base: {num1} = {base} - {diff1}, {num2} = {base} - {diff2}")
+    
+    # Add the differences
+    sum_diff = diff1 + diff2
+    steps.append(f"Step 3: Add the differences: {diff1} + {diff2} = {sum_diff}")
+    
+    # Subtract sum of differences from base and add base
+    result_part = base - sum_diff
+    steps.append(f"Step 4: Subtract sum from base: {base} - {sum_diff} = {result_part}")
+    
+    # If result_part is negative, adjust with base
+    if result_part < 0:
+        result = result_part + base
+        steps.append(f"Step 5: Since result is negative, adjust: {result_part} + {base} = {result}")
+    else:
+        result = result_part + base
+        steps.append(f"Step 5: Add base: {result_part} + {base} = {result}")
+    
+    # Verify with standard addition
+    standard_result = num1 + num2
+    if result != standard_result:
+        return None, "Calculation error. Try numbers closer to a power of 10 for best results."
+    
+    steps.append(f"Final Result: {num1} + {num2} = {result}")
+    return result, steps
+
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    result = None
+    steps = []
+    error = None
+    if request.method == 'POST':
+        try:
+            num1 = int(request.form.get('num1'))
+            num2 = int(request.form.get('num2'))
+            result, steps = add_vedic(num1, num2)
+            if result is None:
+                error = steps
+                steps = []
+        except ValueError:
+            error = "Please enter valid positive integers."
+    
+    return render_template_string(HTML_TEMPLATE, result=result, steps=steps, error=error)
+
+HTML_TEMPLATE = '''
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Vedic Maths: Addition</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .form-container {
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        input[type="text"], input[type="submit"] {
+            padding: 10px;
+            margin: 5px;
+            font-size: 1em;
+        }
+        input[type="submit"] {
+            background-color: #0066cc;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover {
+            background-color: #0055aa;
+        }
+        .result {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .error {
+            color: red;
+        }
+        .steps {
+            margin-top: 10px;
+        }
+        .steps p {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Vedic Maths: Addition Calculator</h1>
+    <div class="form-container">
+        <form method="post">
+            <input type="text" name="num1" placeholder="Enter first number" required>
+            <input type="text" name="num2" placeholder="Enter second number" required>
+            <input type="submit" value="Calculate">
+        </form>
+    </div>
+    {% if error %}
+        <p class="error">{{ error }}</p>
+    {% endif %}
+    {% if result is not none %}
+        <div class="result">
+            <h2>Result: {{ result }}</h2>
+            <div class="steps">
+                <h3>Steps (Nikhilam Navatashcaramam Dashatah):</h3>
+                {% for step in steps %}
+                    <p>{{ step }}</p>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+</body>
+</html>
+'''
+
+if __name__ == '__main__':
+    app.run(debug=True)
