@@ -1,0 +1,250 @@
+from flask import Flask, render_template_string, request, send_from_directory
+from PIL import Image, ImageDraw, ImageFont
+import os
+
+app = Flask(__name__)
+app.config['UPLOAD_FOLDER'] = 'static'
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
+def multiply_3digit_vedic(num1, num2):
+    if not (100 <= num1 <= 999 and 100 <= num2 <= 999):
+        return None, "Both numbers must be 3-digit numbers (100–999).", None
+    
+    # Break down numbers into digits
+    a, b, c = int(str(num1)[0]), int(str(num1)[1]), int(str(num1)[2])
+    x, y, z = int(str(num2)[0]), int(str(num2)[1]), int(str(num2)[2])
+    
+    steps = []
+    # Step 1: Units place (c * z)
+    step1 = c * z
+    carry1 = step1 // 10
+    unit = step1 % 10
+    steps.append(f"Step 1: Multiply units digits: {c} × {z} = {step1} (write {unit}, carry {carry1})")
+    
+    # Step 2: Cross multiply (b*z + c*y) + carry1
+    step2 = b * z + c * y + carry1
+    carry2 = step2 // 10
+    tens = step2 % 10
+    steps.append(f"Step 2: Cross multiply: ({b} × {z}) + ({c} × {y}) + carry {carry1} = {b*z} + {c*y} + {carry1} = {step2} (write {tens}, carry {carry2})")
+    
+    # Step 3: Cross multiply with middle (a*z + b*y + c*x) + carry2
+    step3 = a * z + b * y + c * x + carry2
+    carry3 = step3 // 10
+    hundreds = step3 % 10
+    steps.append(f"Step 3: Cross multiply: ({a} × {z}) + ({b} × {y}) + ({c} × {x}) + carry {carry2} = {a*z} + {b*y} + {c*x} + {carry2} = {step3} (write {hundreds}, carry {carry3})")
+    
+    # Step 4: Cross multiply (a*y + b*x) + carry3
+    step4 = a * y + b * x + carry3
+    carry4 = step4 // 10
+    thousands = step4 % 10
+    steps.append(f"Step 4: Cross multiply: ({a} × {y}) + ({b} × {x}) + carry {carry3} = {a*y} + {b*x} + {carry3} = {step4} (write {thousands}, carry {carry4})")
+    
+    # Step 5: Tens place (a*x) + carry4
+    step5 = a * x + carry4
+    steps.append(f"Step 5: Multiply hundreds digits: ({a} × {x}) + carry {carry4} = {a*x} + {carry4} = {step5} (write {step5})")
+    
+    # Combine result
+    result = step5 * 10000 + thousands * 1000 + hundreds * 100 + tens * 10 + unit
+    steps.append(f"Final Result: {step5}{thousands}{hundreds}{tens}{unit} = {result}")
+    
+    # Generate image for multiplication
+    image = Image.new('RGB', (400, 300), 'white')
+    draw = ImageDraw.Draw(image)
+    try:
+        font = ImageFont.truetype("arial.ttf", 20)
+    except:
+        font = ImageFont.load_default()
+    
+    # Draw numbers
+    draw.text((50, 50), f"{num1}", fill='black', font=font)
+    draw.text((50, 80), f"× {num2}", fill='black', font=font)
+    draw.line((50, 100, 250, 100), fill='black', width=2)
+    
+    # Draw cross lines for Urdhva Tiryak
+    draw.line((70, 60, 110, 90), fill='blue', width=2)  # a*z
+    draw.line((90, 60, 90, 90), fill='red', width=2)   # b*y
+    draw.line((110, 60, 70, 90), fill='green', width=2) # c*x
+    draw.text((50, 120), f"Step 3: {a*z} + {b*y} + {c*x}", fill='black', font=font)
+    
+    image_path = os.path.join(app.config['UPLOAD_FOLDER'], 'multiplication.png')
+    image.save(image_path)
+    
+    return result, steps, 'multiplication.png'
+
+def add_vedic(num1, num2):
+    if num1 < 0 or num2 < 0:
+        return None, "Numbers must be positive integers.", None
+    
+    # Determine the base
+    max_num = max(num1, num2)
+    base = 10 ** (len(str(max_num)) - 1)
+    if max_num >= base * 10:
+        base *= 10
+    
+    steps = []
+    steps.append(f"Step 1: Choose base as {base}.")
+    
+    # Calculate differences from the base
+    diff1 = base - num1
+    diff2 = base - num2
+    steps.append(f"Step 2: Differences from base: {num1} = {base} - {diff1}, {num2} = {base} - {diff2}")
+    
+    # Add the differences
+    sum_diff = diff1 + diff2
+    steps.append(f"Step 3: Add differences: {diff1} + {diff2} = {sum_diff}")
+    
+    # Subtract sum of differences from base and add base
+    result_part = base - sum_diff
+    steps.append(f"Step 4: Subtract from base: {base} - {sum_diff} = {result_part}")
+    
+    if result_part < 0:
+        result = result_part + base
+        steps.append(f"Step 5: Adjust: {result_part} + {base} = {result}")
+    else:
+        result = result_part + base
+        steps.append(f"Step 5: Add base: {result_part} + {base} = {result}")
+    
+    steps.append(f"Final Result: {num1} + {num2} = {result}")
+    
+    # Generate image for addition
+    image = Image.new('RGB', (400, 200), 'white')
+    draw = ImageDraw.Draw(image)
+    try:
+        font = ImageFont.truetype("arial.ttf", 20)
+    except:
+        font = ImageFont.load_default()
+    
+    # Draw numbers and base differences
+    draw.text((50, 50), f"{num1} = {base} - {diff1}", fill='black', font=font)
+    draw.text((50, 80), f"{num2} = {base} - {diff2}", fill='black', font=font)
+    draw.text((50, 110), f"Sum: {base} - ({diff1} + {diff2}) + {base}", fill='black', font=font)
+    draw.text((50, 140), f"= {result}", fill='black', font=font)
+    
+    image_path = os.path.join(app.config['UPLOAD_FOLDER'], 'addition.png')
+    image.save(image_path)
+    
+    return result, steps, 'addition.png'
+
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    result = None
+    steps = []
+    error = None
+    image = None
+    if request.method == 'POST':
+        try:
+            num1 = int(request.form.get('num1'))
+            num2 = int(request.form.get('num2'))
+            operation = request.form.get('operation')
+            if operation == 'multiply':
+                result, steps, image = multiply_3digit_vedic(num1, num2)
+            elif operation == 'add':
+                result, steps, image = add_vedic(num1, num2)
+            if result is None:
+                error = steps
+                steps = []
+        except ValueError:
+            error = "Please enter valid numbers."
+    
+    return render_template_string(HTML_TEMPLATE, result=result, steps=steps, error=error, image=image)
+
+@app.route('/static/<path:filename>')
+def serve_image(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
+HTML_TEMPLATE = '''
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Vedic Maths: Image Drawing</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .form-container {
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        select, input[type="text"], input[type="submit"] {
+            padding: 10px;
+            margin: 5px;
+            font-size: 1em;
+        }
+        input[type="submit"] {
+            background-color: #0066cc;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover {
+            background-color: #0055aa;
+        }
+        .result {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .error {
+            color: red;
+        }
+        .steps {
+            margin-top: 10px;
+        }
+        .steps p {
+            margin: 5px 0;
+        }
+        img {
+            max-width: 100%;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Vedic Maths: Calculation with Image</h1>
+    <div class="form-container">
+        <form method="post">
+            <select name="operation">
+                <option value="multiply">Multiply 3-Digit Numbers</option>
+                <option value="add">Add Numbers</option>
+            </select>
+            <input type="text" name="num1" placeholder="Enter first number" required>
+            <input type="text" name="num2" placeholder="Enter second number" required>
+            <input type="submit" value="Calculate">
+        </form>
+    </div>
+    {% if error %}
+        <p class="error">{{ error }}</p>
+    {% endif %}
+    {% if result is not none %}
+        <div class="result">
+            <h2>Result: {{ result }}</h2>
+            <div class="steps">
+                <h3>Steps:</h3>
+                {% for step in steps %}
+                    <p>{{ step }}</p>
+                {% endfor %}
+            </div>
+            {% if image %}
+                <img src="{{ url_for('serve_image', filename=image) }}" alt="Vedic Maths Diagram">
+            {% endif %}
+        </div>
+    {% endif %}
+</body>
+</html>
+'''
+
+if __name__ == '__main__':
+    app.run(debug=True)
