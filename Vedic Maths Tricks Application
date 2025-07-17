@@ -1,0 +1,214 @@
+from flask import Flask, render_template_string, request
+
+app = Flask(__name__)
+
+def square_number_ending_in_5(number):
+    if not str(number).endswith('5'):
+        return None, "Number must end with 5."
+    tens_digit = number // 10
+    step1 = f"Step 1: Multiply the tens digit ({tens_digit}) by itself plus one: {tens_digit} × ({tens_digit} + 1) = {tens_digit * (tens_digit + 1)}"
+    step2 = f"Step 2: Append 25 to the result: {tens_digit * (tens_digit + 1)}25"
+    result = tens_digit * (tens_digit + 1) * 100 + 25
+    return result, [step1, step2]
+
+def multiply_by_11(number):
+    if not (10 <= number <= 99):
+        return None, "Number must be a two-digit number."
+    num_str = str(number)
+    first_digit = int(num_str[0])
+    second_digit = int(num_str[1])
+    sum_digits = first_digit + second_digit
+    step1 = f"Step 1: Add the digits: {first_digit} + {second_digit} = {sum_digits}"
+    step2 = f"Step 2: Place the sum ({sum_digits}) between the first digit ({first_digit}) and the last digit ({second_digit})"
+    if sum_digits >= 10:
+        carry = sum_digits // 10
+        sum_digits = sum_digits % 10
+        step3 = f"Step 3: Since {first_digit + second_digit} ≥ 10, carry over: {first_digit} + {carry} = {first_digit + carry}"
+        result = (first_digit + carry) * 100 + sum_digits * 10 + second_digit
+        steps = [step1, step2, step3, f"Result: {first_digit + carry}{sum_digits}{second_digit}"]
+    else:
+        result = first_digit * 100 + sum_digits * 10 + second_digit
+        steps = [step1, step2, f"Result: {first_digit}{sum_digits}{second_digit}"]
+    return result, steps
+
+def subtract_from_power_of_10(number, base):
+    if not (1 <= number < base):
+        return None, f"Number must be less than {base}."
+    num_str = str(number).zfill(len(str(base)) - 1)
+    result = ""
+    steps = []
+    for i, digit in enumerate(num_str[:-1]):
+        subtracted = 9 - int(digit)
+        steps.append(f"Step {i+1}: Subtract digit {digit} from 9: 9 - {digit} = {subtracted}")
+        result += str(subtracted)
+    last_digit = 10 - int(num_str[-1])
+    steps.append(f"Step {len(numoberto
+
+System: I'm sorry, I got cut off there. Let me continue with the complete implementation of the **Vedic Maths Tricks** web application.
+
+<xaiArtifact artifact_id="8013f8f7-6d85-4450-9288-897f2447ff8d" artifact_version_id="184d6f91-7248-4952-96f8-0466c0fc07b9" title="vedic_maths_tricks.py" contentType="text/python">
+
+from flask import Flask, render_template_string, request
+
+app = Flask(__name__)
+
+def square_number_ending_in_5(number):
+    if not str(number).endswith('5'):
+        return None, "Number must end with 5."
+    tens_digit = number // 10
+    step1 = f"Step 1: Multiply the tens digit ({tens_digit}) by itself plus one: {tens_digit} × ({tens_digit} + 1) = {tens_digit * (tens_digit + 1)}"
+    step2 = f"Step 2: Append 25 to the result: {tens_digit * (tens_digit + 1)}25"
+    result = tens_digit * (tens_digit + 1) * 100 + 25
+    return result, [step1, step2]
+
+def multiply_by_11(number):
+    if not (10 <= number <= 99):
+        return None, "Number must be a two-digit number."
+    num_str = str(number)
+    first_digit = int(num_str[0])
+    second_digit = int(num_str[1])
+    sum_digits = first_digit + second_digit
+    step1 = f"Step 1: Add the digits: {first_digit} + {second_digit} = {sum_digits}"
+    step2 = f"Step 2: Place the sum ({sum_digits}) between the first digit ({first_digit}) and the last digit ({second_digit})"
+    if sum_digits >= 10:
+        carry = sum_digits // 10
+        sum_digits = sum_digits % 10
+        step3 = f"Step 3: Since {first_digit + second_digit} ≥ 10, carry over: {first_digit} + {carry} = {first_digit + carry}"
+        result = (first_digit + carry) * 100 + sum_digits * 10 + second_digit
+        steps = [step1, step2, step3, f"Result: {first_digit + carry}{sum_digits}{second_digit}"]
+    else:
+        result = first_digit * 100 + sum_digits * 10 + second_digit
+        steps = [step1, step2, f"Result: {first_digit}{sum_digits}{second_digit}"]
+    return result, steps
+
+def subtract_from_power_of_10(number, base):
+    if not (1 <= number < base):
+        return None, f"Number must be less than {base}."
+    num_str = str(number).zfill(len(str(base)) Italicized text
+- 1))
+    result = ""
+    steps = []
+    for i, digit in enumerate(num_str[:-1]):
+        subtracted = 9 - int(digit)
+        steps.append(f"Step {i+1}: Subtract digit {digit} from 9: 9 - {digit} = {subtracted}")
+        result += str(subtracted)
+    last_digit = 10 - int(num_str[-1])
+    steps.append(f"Step {len(num_str)}: Subtract last digit {num_str[-1]} from 10: 10 - {num_str[-1]} = {last_digit}")
+    result += str(last_digit)
+    return int(result), steps
+
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    result = None
+    steps = []
+    error = None
+    if request.method == 'POST':
+        trick = request.form.get('trick')
+        try:
+            number = int(request.form.get('number'))
+            if trick == 'square_5':
+                result, steps = square_number_ending_in_5(number)
+            elif trick == 'multiply_11':
+                result, steps = multiply_by_11(number)
+            elif trick == 'subtract_1000':
+                result, steps = subtract_from_power_of_10(number, 1000)
+            elif trick == 'subtract_10000':
+                result, steps = subtract_from_power_of_10(number, 10000)
+            if result is None:
+                error = steps
+                steps = []
+        except ValueError:
+            error = "Please enter a valid number."
+    
+    return render_template_string(HTML_TEMPLATE, result=result, steps=steps, error=error)
+
+HTML_TEMPLATE = '''
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Vedic Maths Tricks</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .form-container {
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        select, input[type="text"], input[type="submit"] {
+            padding: 10px;
+            margin: 5px;
+            font-size: 1em;
+        }
+        input[type="submit"] {
+            background-color: #0066cc;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover {
+            background-color: #0055aa;
+        }
+        .result {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .error {
+            color: red;
+        }
+        .steps {
+            margin-top: 10px;
+        }
+        .steps p {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Vedic Maths Tricks Calculator</h1>
+    <div class="form-container">
+        <form method="post">
+            <select name="trick">
+                <option value="square_5">Square a Number Ending in 5</option>
+                <option value="multiply_11">Multiply by 11 (Two-Digit Number)</option>
+                <option value="subtract_1000">Subtract from 1000</option>
+                <option value="subtract_10000">Subtract from 10000</option>
+            </select>
+            <input type="text" name="number" placeholder="Enter a number" required>
+            <input type="submit" value="Calculate">
+        </form>
+    </div>
+    {% if error %}
+        <p class="error">{{ error }}</p>
+    {% endif %}
+    {% if result is not none %}
+        <div class="result">
+            <h2>Result: {{ result }}</h2>
+            <div class="steps">
+                <h3>Steps:</h3>
+                {% for step in steps %}
+                    <p>{{ step }}</p>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+</body>
+</html>
+'''
+
+if __name__ == '__main__':
+    app.run(debug=True)
