@@ -1,0 +1,117 @@
+from flask import Flask, render_template_string
+from flask_sqlalchemy import SQLAlchemy
+import feedparser
+from datetime import datetime
+
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///news.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
+
+class Article(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    link = db.Column(db.String(500), nullable=False)
+    summary = db.Column(db.Text, nullable=True)
+    published = db.Column(db.DateTime, nullable=True)
+
+def fetch_articles():
+    rss_url = "http://feeds.bbci.co.uk/news/rss.xml"  # BBC News RSS feed
+    feed = feedparser.parse(rss_url)
+    articles = []
+    
+    for entry in feed.entries:
+        # Check if article already exists to avoid duplicates
+        existing_article = Article.query.filter_by(link=entry.link).first()
+        if not existing_article:
+            published_date = None
+            if 'published_parsed' in entry:
+                published_date = datetime(*entry.published_parsed[:6])
+            article = Article(
+                title=entry.title,
+                link=entry.link,
+                summary=entry.get('summary', 'No summary available'),
+                published=published_date
+            )
+            articles.append(article)
+    
+    if articles:
+        db.session.bulk_save_objects(articles)
+        db.session.commit()
+
+@app.route('/')
+def index():
+    # Fetch new articles on page load
+    fetch_articles()
+    # Get all articles from database, ordered by publication date
+    articles = Article.query.order_by(Article.published.desc()).all()
+    
+    return render_template_string(HTML_TEMPLATE, articles=articles)
+
+HTML_TEMPLATE = '''
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Content Aggregator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .article {
+            background: white;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .article h2 {
+            margin: 0 0 10px;
+            font-size: 1.5em;
+        }
+        .article a {
+            color: #0066cc;
+            text-decoration: none;
+        }
+        .article a:hover {
+            text-decoration: underline;
+        }
+        .article p {
+            color: #555;
+        }
+        .published {
+            font-size: 0.9em;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <h1>News Aggregator</h1>
+    {% for article in articles %}
+        <div class="article">
+            <h2><a href="{{ article.link }}" target="_blank">{{ article.title }}</a></h2>
+            <p>{{ article.summary }}</p>
+            {% if article.published %}
+                <p class="published">Published: {{ article.published.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+            {% else %}
+                <p class="published">Published: Unknown</p>
+            {% endif %}
+        </div>
+    {% else %}
+        <p>No articles found.</p>
+    {% endfor %}
+</body>
+</html>
+'''
+
+if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()
+    app.run(debug=True)
