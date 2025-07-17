@@ -1,0 +1,150 @@
+from flask import Flask, render_template_string, request
+
+app = Flask(__name__)
+
+def multiply_3digit_vedic(num1, num2):
+    if not (100 <= num1 <= 999 and 100 <= num2 <= 999):
+        return None, "Both numbers must be 3-digit numbers (100–999)."
+    
+    # Break down numbers into digits
+    a, b, c = int(str(num1)[0]), int(str(num1)[1]), int(str(num1)[2])
+    x, y, z = int(str(num2)[0]), int(str(num2)[1]), int(str(num2)[2])
+    
+    steps = []
+    # Step 1: Units place (c * z)
+    step1 = c * z
+    carry1 = step1 // 10
+    unit = step1 % 10
+    steps.append(f"Step 1: Multiply units digits: {c} × {z} = {step1} (write {unit}, carry {carry1})")
+    
+    # Step 2: Cross multiply (b*z + c*y) + carry1
+    step2 = b * z + c * y + carry1
+    carry2 = step2 // 10
+    tens = step2 % 10
+    steps.append(f"Step 2: Cross multiply: ({b} × {z}) + ({c} × {y}) + carry {carry1} = {b*z} + {c*y} + {carry1} = {step2} (write {tens}, carry {carry2})")
+    
+    # Step 3: Cross multiply with middle (a*z + b*y + c*x) + carry2
+    step3 = a * z + b * y + c * x + carry2
+    carry3 = step3 // 10
+    hundreds = step3 % 10
+    steps.append(f"Step 3: Cross multiply: ({a} × {z}) + ({b} × {y}) + ({c} × {x}) + carry {carry2} = {a*z} + {b*y} + {c*x} + {carry2} = {step3} (write {hundreds}, carry {carry3})")
+    
+    # Step 4: Cross multiply (a*y + b*x) + carry3
+    step4 = a * y + b * x + carry3
+    carry4 = step4 // 10
+    thousands = step4 % 10
+    steps.append(f"Step 4: Cross multiply: ({a} × {y}) + ({b} × {x}) + carry {carry3} = {a*y} + {b*x} + {carry3} = {step4} (write {thousands}, carry {carry4})")
+    
+    # Step 5: Tens place (a*x) + carry4
+    step5 = a * x + carry4
+    steps.append(f"Step 5: Multiply hundreds digits: ({a} × {x}) + carry {carry4} = {a*x} + {carry4} = {step5} (write {step5})")
+    
+    # Combine result
+    result = step5 * 10000 + thousands * 1000 + hundreds * 100 + tens * 10 + unit
+    steps.append(f"Final Result: {step5}{thousands}{hundreds}{tens}{unit} = {result}")
+    
+    return result, steps
+
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    result = None
+    steps = []
+    error = None
+    if request.method == 'POST':
+        try:
+            num1 = int(request.form.get('num1'))
+            num2 = int(request.form.get('num2'))
+            result, steps = multiply_3digit_vedic(num1, num2)
+            if result is None:
+                error = steps
+                steps = []
+        except ValueError:
+            error = "Please enter valid 3-digit numbers."
+    
+    return render_template_string(HTML_TEMPLATE, result=result, steps=steps, error=error)
+
+HTML_TEMPLATE = '''
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Vedic Maths: 3-Digit Multiplication</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .form-container {
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        input[type="text"], input[type="submit"] {
+            padding: 10px;
+            margin: 5px;
+            font-size: 1em;
+        }
+        input[type="submit"] {
+            background-color: #0066cc;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover {
+            background-color: #0055aa;
+        }
+        .result {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .error {
+            color: red;
+        }
+        .steps {
+            margin-top: 10px;
+        }
+        .steps p {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Vedic Maths: Multiply 3-Digit Numbers</h1>
+    <div class="form-container">
+        <form method="post">
+            <input type="text" name="num1" placeholder="Enter first 3-digit number" required>
+            <input type="text" name="num2" placeholder="Enter second 3-digit number" required>
+            <input type="submit" value="Calculate">
+        </form>
+    </div>
+    {% if error %}
+        <p class="error">{{ error }}</p>
+    {% endif %}
+    {% if result is not none %}
+        <div class="result">
+            <h2>Result: {{ result }}</h2>
+            <div class="steps">
+                <h3>Steps (Urdhva Tiryak - Vertically and Crosswise):</h3>
+                {% for step in steps %}
+                    <p>{{ step }}</p>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+</body>
+</html>
+'''
+
+if __name__ == '__main__':
+    app.run(debug=True)
