@@ -1,0 +1,179 @@
+from flask import Flask, render_template_string, request, send_from_directory
+from PIL import Image, ImageDraw, ImageFont
+import os
+
+app = Flask(__name__)
+app.config['UPLOAD_FOLDER'] = 'static'
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
+def vedic_multiply_dosage(dosage_rate, weight):
+    # Ensure inputs are treated as 2-digit numbers for simplicity
+    if not (1 <= dosage_rate <= 99 and 1 <= weight <= 99):
+        return None, "Dosage rate and weight must be between 1 and 99.", None
+    
+    # Break down numbers into digits
+    a = dosage_rate // 10  # Tens digit of dosage_rate
+    b = dosage_rate % 10   # Units digit of dosage_rate
+    x = weight // 10      # Tens digit of weight
+    y = weight % 10       # Units digit of weight
+    
+    steps = []
+    # Step 1: Units place (b * y)
+    step1 = b * y
+    carry1 = step1 // 10
+    units = step1 % 10
+    steps.append(f"Step 1: Multiply units digits: {b} × {y} = {step1} (write {units}, carry {carry1})")
+    
+    # Step 2: Cross multiply (a*y + b*x) + carry1
+    step2 = a * y + b * x + carry1
+    carry2 = step2 // 10
+    tens = step2 % 10
+    steps.append(f"Step 2: Cross multiply: ({a} × {y}) + ({b} × {x}) + carry {carry1} = {a*y} + {b*x} + {carry1} = {step2} (write {tens}, carry {carry2})")
+    
+    # Step 3: Tens place (a*x) + carry2
+    step3 = a * x + carry2
+    steps.append(f"Step 3: Multiply tens digits: ({a} × {x}) + carry {carry2} = {a*x} + {carry2} = {step3} (write {step3})")
+    
+    # Combine result
+    result = step3 * 100 + tens * 10 + units
+    steps.append(f"Final Dosage: {dosage_rate} mg/kg × {weight} kg = {result} mg")
+    
+    # Generate image
+    image = Image.new('RGB', (400, 300), 'white')
+    draw = ImageDraw.Draw(image)
+    try:
+        font = ImageFont.truetype("arial.ttf", 20)
+    except:
+        font = ImageFont.load_default()
+    
+    # Draw numbers and context
+    draw.text((50, 50), f"Dosage: {dosage_rate} mg/kg", fill='black', font=font)
+    draw.text((50, 80), f"Weight: {weight} kg", fill='black', font=font)
+    draw.text((50, 110), f"{dosage_rate} × {weight}", fill='black', font=font)
+    draw.line((50, 130, 250, 130), fill='black', width=2)
+    
+    # Draw cross lines for Urdhva Tiryak
+    draw.line((70, 120, 110, 150), fill='blue', width=2)  # a*y
+    draw.line((110, 120, 70, 150), fill='red', width=2)   # b*x
+    draw.text((50, 160), f"Step 2: {a*y} + {b*x}", fill='black', font=font)
+    
+    image_path = os.path.join(app.config['UPLOAD_FOLDER'], 'dosage_calc.png')
+    image.save(image_path)
+    
+    return result, steps, 'dosage_calc.png'
+
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    result = None
+    steps = []
+    error = None
+    image = None
+    if request.method == 'POST':
+        try:
+            dosage_rate = int(request.form.get('dosage_rate'))
+            weight = int(request.form.get('weight'))
+            result, steps, image = vedic_multiply_dosage(dosage_rate, weight)
+            if result is None:
+                error = steps
+                steps = []
+        except ValueError:
+            error = "Please enter valid numbers (1–99 for dosage rate and weight)."
+    
+    return render_template_string(HTML_TEMPLATE, result=result, steps=steps, error=error, image=image)
+
+@app.route('/static/<path:filename>')
+def serve_image(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
+HTML_TEMPLATE = '''
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Vedic Maths: Drug Dosage Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .form-container {
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        input[type="text"], input[type="submit"] {
+            padding: 10px;
+            margin: 5px;
+            font-size: 1em;
+        }
+        input[type="submit"] {
+            background-color: #0066cc;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover {
+            background-color: #0055aa;
+        }
+        .result {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .error {
+            color: red;
+        }
+        .steps {
+            margin-top: 10px;
+        }
+        .steps p {
+            margin: 5px 0;
+        }
+        img {
+            max-width: 100%;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Vedic Maths: Drug Dosage Calculator</h1>
+    <div class="form-container">
+        <form method="post">
+            <input type="text" name="dosage_rate" placeholder="Enter dosage rate (mg/kg)" required>
+            <input type="text" name="weight" placeholder="Enter patient weight (kg)" required>
+            <input type="submit" value="Calculate">
+        </form>
+    </div>
+    {% if error %}
+        <p class="error">{{ error }}</p>
+    {% endif %}
+    {% if result is not none %}
+        <div class="result">
+            <h2>Total Dosage: {{ result }} mg</h2>
+            <div class="steps">
+                <h3>Steps (Urdhva Tiryak - Vertically and Crosswise):</h3>
+                {% for step in steps %}
+                    <p>{{ step }}</p>
+                {% endfor %}
+            </div>
+            {% if image %}
+                <img src="{{ url_for('serve_image', filename=image) }}" alt="Vedic Maths Dosage Diagram">
+            {% endif %}
+        </div>
+    {% endif %}
+</body>
+</html>
+'''
+
+if __name__ == '__main__':
+    app.run(debug=True)
