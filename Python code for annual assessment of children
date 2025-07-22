@@ -1,0 +1,60 @@
+def get_grade(average):
+    if average >= 90:
+        return "A+"
+    elif average >= 80:
+        return "A"
+    elif average >= 70:
+        return "B"
+    elif average >= 60:
+        return "C"
+    elif average >= 50:
+        return "D"
+    else:
+        return "Fail"
+
+def get_result(marks):
+    for m in marks:
+        if m < 35:
+            return "Fail"
+    return "Pass"
+
+def display_report(data):
+    print("\n========= Annual Assessment Report =========")
+    print(f"{'Name':<15}{'Total':<10}{'Average':<10}{'Grade':<10}{'Result':<10}")
+    print("-" * 55)
+    for student in data:
+        marks = data[student]['marks']
+        total = sum(marks)
+        average = total / len(marks)
+        grade = get_grade(average)
+        result = get_result(marks)
+        print(f"{student:<15}{total:<10}{average:<10.2f}{grade:<10}{result:<10}")
+    print("-" * 55)
+
+def main():
+    students_data = {}
+    subjects = ["English", "Math", "Science", "Social Studies", "Computer"]
+
+    num_students = int(input("Enter number of students: "))
+
+    for _ in range(num_students):
+        name = input("\nEnter student's name: ")
+        marks = []
+        print(f"Enter marks for {name} (out of 100):")
+        for subject in subjects:
+            while True:
+                try:
+                    score = float(input(f"  {subject}: "))
+                    if 0 <= score <= 100:
+                        marks.append(score)
+                        break
+                    else:
+                        print("  Enter a valid score (0–100).")
+                except:
+                    print("  Invalid input. Please enter a number.")
+        students_data[name] = {'marks': marks}
+
+    display_report(students_data)
+
+if __name__ == "__main__":
+    main()
