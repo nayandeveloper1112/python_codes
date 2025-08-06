@@ -1,0 +1,15 @@
+message = input("Enter a message: ")
+words = message.split()
+
+emoji_dict = {
+    "happy": "😊",
+    "sad": "😢",
+    "love": "❤️",
+    "hello": "👋"
+}
+
+output = ""
+for word in words:
+    output += emoji_dict.get(word, word) + " "
+
+print(output)
