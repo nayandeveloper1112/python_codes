@@ -1,0 +1,5 @@
+import random
+
+answers = ["Yes", "No", "Maybe", "Ask again later", "Definitely!", "I don't think so"]
+question = input("Ask the Magic 8 Ball a yes/no question: ")
+print("Magic 8 Ball says:", random.choice(answers))
