@@ -1,0 +1,99 @@
+🖥️ A. Server Code: server.py
+
+import socket
+import threading
+
+# Server details
+host = '0.0.0.0'  # Listen on all network interfaces
+port = 5555
+
+# Create socket
+server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server.bind((host, port))
+server.listen()
+
+clients = []
+usernames = []
+
+def broadcast(message, client_socket):
+    for client in clients:
+        if client != client_socket:
+            client.send(message)
+
+def handle_client(client):
+    while True:
+        try:
+            message = client.recv(1024)
+            broadcast(message, client)
+        except:
+            index = clients.index(client)
+            clients.remove(client)
+            client.close()
+            username = usernames[index]
+            print(f"{username} disconnected.")
+            broadcast(f"{username} has left the chat.".encode('utf-8'), client)
+            usernames.remove(username)
+            break
+
+def receive_connections():
+    print("Server is running and waiting for connections...")
+    while True:
+        client, address = server.accept()
+        print(f"Connected with {str(address)}")
+
+        client.send("USERNAME".encode('utf-8'))
+        username = client.recv(1024).decode('utf-8')
+        usernames.append(username)
+        clients.append(client)
+
+        print(f"Username of the client is {username}")
+        broadcast(f"{username} joined the chat.".encode('utf-8'), client)
+        client.send("Connected to the server.".encode('utf-8'))
+
+        thread = threading.Thread(target=handle_client, args=(client,))
+        thread.start()
+
+receive_connections()
+
+
+
+
+
+💻 B. Client Code: client.py
+
+
+import socket
+import threading
+
+# Server IP address (change to server's IP if on another device)
+server_ip = '127.0.0.1'  # Replace with actual IP in LAN
+port = 5555
+
+client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+client.connect((server_ip, port))
+
+username = input("Enter your username: ")
+
+def receive():
+    while True:
+        try:
+            message = client.recv(1024).decode('utf-8')
+            if message == "USERNAME":
+                client.send(username.encode('utf-8'))
+            else:
+                print(message)
+        except:
+            print("An error occurred. Connection closed.")
+            client.close()
+            break
+
+def write():
+    while True:
+        message = f'{username}: {input("")}'
+        client.send(message.encode('utf-8'))
+
+receive_thread = threading.Thread(target=receive)
+receive_thread.start()
+
+write_thread = threading.Thread(target=write)
+write_thread.start()
