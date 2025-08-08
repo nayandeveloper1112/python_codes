@@ -1,0 +1,124 @@
+import tkinter as tk
+from tkinter import messagebox
+import sqlite3
+
+# --- DATABASE SETUP ---
+conn = sqlite3.connect('library.db')
+cursor = conn.cursor()
+cursor.execute("""
+    CREATE TABLE IF NOT EXISTS books (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT,
+        author TEXT,
+        year INTEGER,
+        isbn TEXT
+    )
+""")
+conn.commit()
+
+
+# --- FUNCTIONS ---
+def add_book():
+    if title_var.get() == "" or author_var.get() == "":
+        messagebox.showwarning("Input Error", "Title and Author are required.")
+        return
+    cursor.execute("INSERT INTO books (title, author, year, isbn) VALUES (?, ?, ?, ?)",
+                   (title_var.get(), author_var.get(), year_var.get(), isbn_var.get()))
+    conn.commit()
+    messagebox.showinfo("Success", "Book added.")
+    clear_fields()
+    view_books()
+
+
+def view_books():
+    listbox.delete(0, tk.END)
+    cursor.execute("SELECT * FROM books")
+    for row in cursor.fetchall():
+        listbox.insert(tk.END, row)
+
+
+def search_books():
+    listbox.delete(0, tk.END)
+    cursor.execute("SELECT * FROM books WHERE title LIKE ? OR author LIKE ?",
+                   (f'%{title_var.get()}%', f'%{author_var.get()}%'))
+    for row in cursor.fetchall():
+        listbox.insert(tk.END, row)
+
+
+def delete_book():
+    selected = listbox.curselection()
+    if not selected:
+        return
+    book_id = listbox.get(selected[0])[0]
+    cursor.execute("DELETE FROM books WHERE id=?", (book_id,))
+    conn.commit()
+    messagebox.showinfo("Deleted", "Book removed.")
+    view_books()
+
+
+def update_book():
+    selected = listbox.curselection()
+    if not selected:
+        return
+    book_id = listbox.get(selected[0])[0]
+    cursor.execute("UPDATE books SET title=?, author=?, year=?, isbn=? WHERE id=?",
+                   (title_var.get(), author_var.get(), year_var.get(), isbn_var.get(), book_id))
+    conn.commit()
+    messagebox.showinfo("Updated", "Book updated.")
+    view_books()
+
+
+def select_book(event):
+    if not listbox.curselection():
+        return
+    selected = listbox.get(listbox.curselection()[0])
+    title_var.set(selected[1])
+    author_var.set(selected[2])
+    year_var.set(selected[3])
+    isbn_var.set(selected[4])
+
+
+def clear_fields():
+    title_var.set("")
+    author_var.set("")
+    year_var.set("")
+    isbn_var.set("")
+
+
+# --- GUI SETUP ---
+root = tk.Tk()
+root.title("Library Management System")
+
+title_var = tk.StringVar()
+author_var = tk.StringVar()
+year_var = tk.StringVar()
+isbn_var = tk.StringVar()
+
+tk.Label(root, text="Title").grid(row=0, column=0)
+tk.Entry(root, textvariable=title_var).grid(row=0, column=1)
+
+tk.Label(root, text="Author").grid(row=0, column=2)
+tk.Entry(root, textvariable=author_var).grid(row=0, column=3)
+
+tk.Label(root, text="Year").grid(row=1, column=0)
+tk.Entry(root, textvariable=year_var).grid(row=1, column=1)
+
+tk.Label(root, text="ISBN").grid(row=1, column=2)
+tk.Entry(root, textvariable=isbn_var).grid(row=1, column=3)
+
+tk.Button(root, text="Add Book", command=add_book).grid(row=2, column=0, pady=10)
+tk.Button(root, text="Search", command=search_books).grid(row=2, column=1)
+tk.Button(root, text="Update", command=update_book).grid(row=2, column=2)
+tk.Button(root, text="Delete", command=delete_book).grid(row=2, column=3)
+tk.Button(root, text="View All", command=view_books).grid(row=2, column=4)
+
+listbox = tk.Listbox(root, height=10, width=70)
+listbox.grid(row=3, column=0, columnspan=5, pady=10)
+listbox.bind('<<ListboxSelect>>', select_book)
+
+tk.Button(root, text="Clear", command=clear_fields).grid(row=4, column=2)
+tk.Button(root, text="Exit", command=root.quit).grid(row=4, column=3)
+
+view_books()
+
+root.mainloop()
