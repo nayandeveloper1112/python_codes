@@ -1,0 +1,99 @@
+import pickle
+import os
+
+FILENAME = "students.dat"
+
+def load_data():
+    if not os.path.exists(FILENAME):
+        return []
+    with open(FILENAME, "rb") as f:
+        return pickle.load(f)
+
+def save_data(data):
+    with open(FILENAME, "wb") as f:
+        pickle.dump(data, f)
+
+def add_student():
+    data = load_data()
+    roll = input("Enter Roll Number: ")
+    name = input("Enter Name: ")
+    branch = input("Enter Branch: ")
+    marks = float(input("Enter Marks: "))
+    student = {"roll": roll, "name": name, "branch": branch, "marks": marks}
+    data.append(student)
+    save_data(data)
+    print("Student added successfully.")
+
+def display_all():
+    data = load_data()
+    print("\nAll Student Records:\n")
+    for student in data:
+        print(student)
+
+def search_student():
+    data = load_data()
+    roll = input("Enter Roll Number to Search: ")
+    found = False
+    for student in data:
+        if student["roll"] == roll:
+            print("Student Found:")
+            print(student)
+            found = True
+            break
+    if not found:
+        print("Student not found.")
+
+def delete_student():
+    data = load_data()
+    roll = input("Enter Roll Number to Delete: ")
+    new_data = [s for s in data if s["roll"] != roll]
+    if len(new_data) == len(data):
+        print("Student not found.")
+    else:
+        save_data(new_data)
+        print("Student deleted successfully.")
+
+def update_student():
+    data = load_data()
+    roll = input("Enter Roll Number to Update: ")
+    for student in data:
+        if student["roll"] == roll:
+            print("Old Data:", student)
+            student["name"] = input("Enter New Name: ")
+            student["branch"] = input("Enter New Branch: ")
+            student["marks"] = float(input("Enter New Marks: "))
+            save_data(data)
+            print("Student updated successfully.")
+            return
+    print("Student not found.")
+
+def menu():
+    while True:
+        print("\n--- Student Record Management ---")
+        print("1. Add Student")
+        print("2. Display All Students")
+        print("3. Search Student")
+        print("4. Delete Student")
+        print("5. Update Student")
+        print("6. Exit")
+
+        choice = input("Enter your choice: ")
+
+        if choice == "1":
+            add_student()
+        elif choice == "2":
+            display_all()
+        elif choice == "3":
+            search_student()
+        elif choice == "4":
+            delete_student()
+        elif choice == "5":
+            update_student()
+        elif choice == "6":
+            print("Exiting...")
+            break
+        else:
+            print("Invalid choice!")
+
+if __name__ == "__main__":
+    menu()
