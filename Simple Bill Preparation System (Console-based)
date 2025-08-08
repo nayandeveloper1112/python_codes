@@ -1,0 +1,49 @@
+def display_menu():
+    print("\n====== Welcome to Billing System ======")
+    print("1. Add item")
+    print("2. Show bill")
+    print("3. Exit")
+
+def add_item(bill):
+    item_name = input("Enter item name: ")
+    quantity = int(input("Enter quantity: "))
+    price = float(input("Enter price per unit: "))
+    total = quantity * price
+    bill.append({'name': item_name, 'quantity': quantity, 'price': price, 'total': total})
+    print(f"Added {quantity} x {item_name} @ ₹{price} each.")
+
+def show_bill(bill):
+    if not bill:
+        print("No items in the bill.")
+        return
+
+    print("\n======= Final Bill =======")
+    print("{:<20} {:<10} {:<10} {:<10}".format("Item", "Qty", "Rate", "Total"))
+    print("-" * 55)
+    grand_total = 0
+    for item in bill:
+        print("{:<20} {:<10} {:<10} {:<10}".format(
+            item['name'], item['quantity'], item['price'], item['total']))
+        grand_total += item['total']
+    
+    print("-" * 55)
+    print(f"{'Grand Total':<20} {'':<10} {'':<10} ₹{grand_total:.2f}")
+    print("===============================")
+
+def billing_system():
+    bill = []
+    while True:
+        display_menu()
+        choice = input("Enter your choice: ")
+        if choice == '1':
+            add_item(bill)
+        elif choice == '2':
+            show_bill(bill)
+        elif choice == '3':
+            print("Thank you for using Billing System!")
+            break
+        else:
+            print("Invalid choice!")
+
+if __name__ == "__main__":
+    billing_system()
