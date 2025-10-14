@@ -1,0 +1,59 @@
+# file: stock_manager.py
+# Requires: pip install tk (usually included)
+import tkinter as tk
+from tkinter import messagebox, ttk
+import sqlite3
+import datetime
+
+DB = "stock.db"
+def init():
+    conn = sqlite3.connect(DB)
+    c = conn.cursor()
+    c.execute('''CREATE TABLE IF NOT EXISTS stock
+                 (id INTEGER PRIMARY KEY, name TEXT, batch TEXT, qty INTEGER, expiry TEXT)''')
+    conn.commit()
+    conn.close()
+
+def add_item(name,batch,qty,expiry):
+    conn = sqlite3.connect(DB)
+    c = conn.cursor()
+    c.execute("INSERT INTO stock (name,batch,qty,expiry) VALUES (?,?,?,?)", (name,batch,qty,expiry))
+    conn.commit(); conn.close()
+
+def get_all():
+    conn = sqlite3.connect(DB); c = conn.cursor()
+    c.execute("SELECT * FROM stock")
+    rows = c.fetchall(); conn.close(); return rows
+
+init()
+# --- GUI ---
+root = tk.Tk(); root.title("Pharmacy Stock Manager")
+tk.Label(root,text="Name").grid(row=0,column=0); name_var = tk.StringVar(); tk.Entry(root,textvariable=name_var).grid(row=0,column=1)
+tk.Label(root,text="Batch").grid(row=1,column=0); batch_var = tk.StringVar(); tk.Entry(root,textvariable=batch_var).grid(row=1,column=1)
+tk.Label(root,text="Qty").grid(row=2,column=0); qty_var = tk.IntVar(); tk.Entry(root,textvariable=qty_var).grid(row=2,column=1)
+tk.Label(root,text="Expiry (YYYY-MM-DD)").grid(row=3,column=0); exp_var = tk.StringVar(); tk.Entry(root,textvariable=exp_var).grid(row=3,column=1)
+
+def add_action():
+    try:
+        add_item(name_var.get(), batch_var.get(), qty_var.get(), exp_var.get())
+        messagebox.showinfo("Added", "Item added.")
+        refresh()
+    except Exception as e:
+        messagebox.showerror("Error", str(e))
+
+def refresh():
+    for row in tree.get_children():
+        tree.delete(row)
+    for r in get_all():
+        tree.insert("", "end", values=r)
+
+tk.Button(root, text="Add", command=add_action).grid(row=4,column=0)
+tk.Button(root, text="Refresh", command=refresh).grid(row=4,column=1)
+
+cols = ("ID","Name","Batch","Qty","Expiry")
+tree = ttk.Treeview(root, columns=cols, show="headings")
+for c in cols:
+    tree.heading(c, text=c)
+tree.grid(row=5,column=0,columnspan=2)
+refresh()
+root.mainloop()
