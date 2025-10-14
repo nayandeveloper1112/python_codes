@@ -1,0 +1,37 @@
+# file: pv_text_analyzer.py
+# Requires: pip install spacy
+# python -m spacy download en_core_web_sm
+import spacy
+nlp = spacy.load("en_core_web_sm")
+
+ADR_KEYWORDS = {
+    "rash": "moderate",
+    "anaphylaxis": "severe",
+    "nausea": "minor",
+    "vomiting": "moderate",
+    "headache": "minor",
+    "bleeding": "severe",
+    "dizziness": "moderate"
+}
+
+def analyze(text):
+    doc = nlp(text.lower())
+    found = {}
+    for kw,severity in ADR_KEYWORDS.items():
+        if kw in text.lower():
+            found[kw] = severity
+    # basic entity extraction for drug names (heuristic)
+    drugs = [ent.text for ent in doc.ents if ent.label_ in ("DRUG","PRODUCT","ORG","PERSON")]
+    return {"keywords":found, "drugs":drugs}
+
+if __name__ == "__main__":
+    txt = input("Paste ADR report text: ")
+    res = analyze(txt)
+    print("Found ADR keywords:", res["keywords"])
+    print("Possible drug entities/mentions:", res["drugs"])
+    # Very simple severity summarization
+    sev_priority = {"minor":1,"moderate":2,"severe":3}
+    overall = "Unknown"
+    if res["keywords"]:
+        overall = max(res["keywords"].values(), key=lambda s: sev_priority[s])
+    print("Overall severity (heuristic):", overall)
