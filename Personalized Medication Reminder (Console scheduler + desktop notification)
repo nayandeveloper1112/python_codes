@@ -1,0 +1,48 @@
+# file: med_reminder.py
+# Requires: pip install plyer schedule
+import schedule
+import time
+from datetime import datetime
+try:
+    from plyer import notification
+except:
+    notification = None
+
+reminders = []
+
+def add_reminder():
+    name = input("Medicine name: ")
+    time_str = input("Time (HH:MM in 24h): ")
+    reminders.append((name, time_str))
+    schedule.every().day.at(time_str).do(notify, name=name, time_str=time_str)
+    print(f"Reminder set for {name} at {time_str} daily.")
+
+def notify(name, time_str):
+    msg = f"Time to take {name} ({time_str})"
+    print(f"[{datetime.now().strftime('%H:%M:%S')}] {msg}")
+    if notification:
+        notification.notify(title="Medication Reminder", message=msg, timeout=10)
+    # For SMS (Twilio) integrate here (commented)
+    # from twilio.rest import Client
+    # client = Client(account_sid, auth_token)
+    # client.messages.create(body=msg, from_='+1...', to='+91...')
+
+if __name__ == "__main__":
+    print("Simple Medication Reminder")
+    while True:
+        print("1 Add reminder  2 Start scheduler  3 Exit")
+        c = input("Choice: ")
+        if c == "1":
+            add_reminder()
+        elif c == "2":
+            print("Scheduler running. Press Ctrl+C to stop.")
+            try:
+                while True:
+                    schedule.run_pending()
+                    time.sleep(1)
+            except KeyboardInterrupt:
+                print("Stopped.")
+        elif c == "3":
+            break
+        else:
+            print("Invalid.")
