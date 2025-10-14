@@ -1,0 +1,46 @@
+# file: prescription_parser.py
+# Requires: pip install pytesseract pillow opencv-python
+# Also install Tesseract-OCR on your system (e.g., apt install tesseract-ocr or from https://github.com/tesseract-ocr)
+
+import re
+import cv2
+import pytesseract
+from pytesseract import Output
+
+# If tesseract not in PATH, set like:
+# pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+
+def ocr_image(path):
+    img = cv2.imread(path, cv2.IMREAD_COLOR)
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    # optional preprocessing
+    gray = cv2.bilateralFilter(gray, 9, 75, 75)
+    text = pytesseract.image_to_string(gray)
+    return text
+
+def extract_medications(text):
+    lines = text.splitlines()
+    meds = []
+    # naive regex to capture lines with drug names and doses (e.g., "Amoxicillin 500 mg BD")
+    pattern = re.compile(r"([A-Za-z][A-Za-z0-9\-\s/]+)\s+(\d+(?:\.\d+)?\s*(?:mg|g|ml|mcg|IU))\s*(.*)", re.I)
+    for l in lines:
+        l = l.strip()
+        if not l: continue
+        m = pattern.search(l)
+        if m:
+            meds.append({"name": m.group(1).strip(), "dose": m.group(2).strip(), "rest": m.group(3).strip()})
+        else:
+            # catch probable drug name-only lines by heuristics (capitalized words + short)
+            if len(l.split()) <= 4 and any(char.isalpha() for char in l):
+                meds.append({"name": l, "dose": "", "rest": ""})
+    return meds
+
+if __name__ == "__main__":
+    path = input("Path to prescription image (png/jpg): ")
+    print("Performing OCR...")
+    txt = ocr_image(path)
+    print("\n--- OCR Text ---\n", txt)
+    meds = extract_medications(txt)
+    print("\n--- Extracted Medications ---")
+    for m in meds:
+        print(m)
