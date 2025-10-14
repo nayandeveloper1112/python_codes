@@ -1,0 +1,43 @@
+# file: vitals_tracker.py
+# Requires: pip install pandas matplotlib
+import csv, os
+from datetime import datetime
+import matplotlib.pyplot as plt
+import pandas as pd
+
+FILE = "vitals.csv"
+
+def ensure():
+    if not os.path.exists(FILE):
+        with open(FILE,"w",newline="") as f:
+            writer = csv.writer(f); writer.writerow(["date","type","value"])
+
+def add_reading():
+    typ = input("Type (glucose/bp_sys/bp_dia): ")
+    val = input("Value: ")
+    date = datetime.now().isoformat()
+    with open(FILE,"a",newline="") as f:
+        writer = csv.writer(f); writer.writerow([date, typ, val])
+    print("Saved.")
+
+def plot():
+    df = pd.read_csv(FILE, parse_dates=["date"])
+    for t in df['type'].unique():
+        sub = df[df['type']==t]
+        plt.figure()
+        plt.plot(sub['date'], sub['value'].astype(float), marker='o')
+        plt.title(t)
+        plt.xlabel("Date")
+        plt.ylabel("Value")
+        plt.xticks(rotation=30)
+    plt.show()
+
+if __name__ == "__main__":
+    ensure()
+    while True:
+        print("1 Add reading  2 Plot  3 Exit")
+        c = input("Choice: ")
+        if c=="1": add_reading()
+        elif c=="2": plot()
+        elif c=="3": break
+        else: print("Invalid")
