@@ -1,0 +1,31 @@
+# file: counselling_bot.py
+# No external deps
+
+FAQS = {
+    "paracetamol": "Paracetamol: usual adult dose 500-1000 mg every 4-6 hours. Max 4 g/day. Avoid with heavy alcohol consumption.",
+    "ibuprofen": "Ibuprofen: NSAID. Typical 200-400 mg every 4-6 hours. Take with food to reduce GI upset. Avoid in peptic ulcer or severe renal disease.",
+    "metformin": "Metformin: start 500 mg BD with meals. Monitor renal function; can cause GI upset initially.",
+    "antibiotic": "Complete the full course as prescribed. Do not stop early. Take as advised (some with food, some empty stomach)."
+}
+
+def reply(user):
+    u = user.lower()
+    # exact keyword match
+    for k in FAQS:
+        if k in u:
+            return FAQS[k]
+    # fallback: simple pattern check
+    if "dose" in u or "how much" in u:
+        return "Please tell me the drug name and patient's age/weight for dose guidance."
+    if "side effect" in u or "side-effect" in u or "adverse" in u:
+        return "Common side effects depend on the drug. Tell me the drug name to get common side effects."
+    return ("I can provide counselling tips for common drugs. "
+            "Ask like: 'paracetamol dose', 'ibuprofen side effects', or 'how to take amoxicillin'.")
+
+if __name__ == "__main__":
+    print("Pharmacy Counselling Assistant (type 'exit' to quit)")
+    while True:
+        q = input("You: ")
+        if q.strip().lower() in ("exit","quit"):
+            break
+        print("Bot:", reply(q))
