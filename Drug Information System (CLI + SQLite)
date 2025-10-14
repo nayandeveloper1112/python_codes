@@ -1,0 +1,72 @@
+# file: drug_info_system.py
+import sqlite3
+
+DB = "drugs.db"
+
+def init_db():
+    conn = sqlite3.connect(DB)
+    c = conn.cursor()
+    c.execute('''CREATE TABLE IF NOT EXISTS drugs
+                 (id INTEGER PRIMARY KEY, brand TEXT, generic TEXT, class TEXT, dose TEXT, indications TEXT)''')
+    conn.commit()
+    conn.close()
+
+def add_drug():
+    brand = input("Brand name: ")
+    generic = input("Generic name: ")
+    dclass = input("Drug class: ")
+    dose = input("Dose (e.g., 500 mg OD): ")
+    indications = input("Indications: ")
+    conn = sqlite3.connect(DB)
+    c = conn.cursor()
+    c.execute("INSERT INTO drugs (brand, generic, class, dose, indications) VALUES (?, ?, ?, ?, ?)",
+              (brand, generic, dclass, dose, indications))
+    conn.commit()
+    conn.close()
+    print("Drug added.")
+
+def search_drug():
+    q = input("Search by brand/generic/class: ").lower()
+    conn = sqlite3.connect(DB)
+    c = conn.cursor()
+    c.execute("SELECT * FROM drugs WHERE LOWER(brand) LIKE ? OR LOWER(generic) LIKE ? OR LOWER(class) LIKE ?",
+              (f"%{q}%", f"%{q}%", f"%{q}%"))
+    rows = c.fetchall()
+    conn.close()
+    if not rows:
+        print("No matches.")
+    else:
+        for r in rows:
+            print(f"ID:{r[0]} Brand:{r[1]} Generic:{r[2]} Class:{r[3]} Dose:{r[4]} Indications:{r[5]}")
+
+def list_drugs():
+    conn = sqlite3.connect(DB)
+    c = conn.cursor()
+    c.execute("SELECT * FROM drugs")
+    for r in c.fetchall():
+        print(r)
+    conn.close()
+
+def delete_drug():
+    id_ = input("Enter drug ID to delete: ")
+    conn = sqlite3.connect(DB)
+    c = conn.cursor()
+    c.execute("DELETE FROM drugs WHERE id=?", (id_,))
+    conn.commit()
+    conn.close()
+    print("Deleted if existed.")
+
+def menu():
+    init_db()
+    while True:
+        print("\n1. Add drug\n2. Search drug\n3. List all\n4. Delete by ID\n5. Exit")
+        ch = input("Choice: ")
+        if ch == "1": add_drug()
+        elif ch == "2": search_drug()
+        elif ch == "3": list_drugs()
+        elif ch == "4": delete_drug()
+        elif ch == "5": break
+        else: print("Invalid")
+
+if __name__ == "__main__":
+    menu()
