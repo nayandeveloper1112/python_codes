@@ -1,0 +1,73 @@
+# file: adr_app.py
+# Requires: pip install flask
+from flask import Flask, request, redirect, render_template_string, g
+import sqlite3
+
+DB = "adr_reports.db"
+app = Flask(__name__)
+
+def get_db():
+    db = getattr(g, '_database', None)
+    if db is None:
+        db = g._database = sqlite3.connect(DB)
+    return db
+
+def init_db():
+    conn = sqlite3.connect(DB)
+    c = conn.cursor()
+    c.execute('''CREATE TABLE IF NOT EXISTS reports
+                 (id INTEGER PRIMARY KEY, patient TEXT, drug TEXT, reaction TEXT, severity TEXT, date TEXT)''')
+    conn.commit()
+    conn.close()
+
+@app.teardown_appcontext
+def close_connection(exception):
+    db = getattr(g, '_database', None)
+    if db is not None:
+        db.close()
+
+FORM = """
+<!doctype html>
+<title>ADR Reporting</title>
+<h2>Report an ADR</h2>
+<form method=post>
+  Patient name: <input name=patient><br>
+  Drug: <input name=drug><br>
+  Reaction: <input name=reaction><br>
+  Severity: <select name=severity><option>Minor</option><option>Moderate</option><option>Severe</option></select><br>
+  <input type=submit value=Submit>
+</form>
+<hr>
+<a href="/reports">View all reports</a>
+"""
+
+@app.route("/", methods=["GET","POST"])
+def index():
+    if request.method == "POST":
+        patient = request.form["patient"]
+        drug = request.form["drug"]
+        reaction = request.form["reaction"]
+        severity = request.form["severity"]
+        import datetime
+        date = datetime.date.today().isoformat()
+        db = get_db()
+        db.execute("INSERT INTO reports (patient,drug,reaction,severity,date) VALUES (?,?,?,?,?)",
+                   (patient,drug,reaction,severity,date))
+        db.commit()
+        return redirect("/reports")
+    return render_template_string(FORM)
+
+@app.route("/reports")
+def reports():
+    db = get_db()
+    cur = db.execute("SELECT id,patient,drug,reaction,severity,date FROM reports ORDER BY id DESC")
+    rows = cur.fetchall()
+    html = "<h2>ADR Reports</h2><a href='/'>Submit new</a><ul>"
+    for r in rows:
+        html += f"<li>{r[5]} - {r[1]} / {r[2]} => {r[3]} ({r[4]})</li>"
+    html += "</ul>"
+    return html
+
+if __name__ == "__main__":
+    init_db()
+    app.run(debug=True)
