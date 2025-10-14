@@ -1,0 +1,55 @@
+# file: power_prompt_generator.py
+
+from datetime import datetime
+
+def generate_power_prompt(topic, goal=None, audience=None, format_type=None):
+    """
+    Generates a structured power prompt for Claude (or ChatGPT)
+    based on the given topic and optional parameters.
+    """
+
+    # Default values
+    goal = goal or "Provide a comprehensive and insightful explanation."
+    audience = audience or "college students or professionals in the field."
+    format_type = format_type or "structured report or bullet points"
+
+    prompt = f"""
+You are an expert AI assistant with deep domain knowledge and analytical ability.
+Your task is to generate a detailed and high-quality output on the given topic.
+
+🎯 **Topic:** {topic}
+
+🎯 **Goal:** {goal}
+
+👥 **Target Audience:** {audience}
+
+🧩 **Expected Output Format:** {format_type}
+
+🧠 **Guidelines for Response:**
+1. Start with a concise definition or introduction.
+2. Cover all essential aspects of the topic using clear, factual explanations.
+3. Where relevant, include examples, case studies, or real-world applications.
+4. Organize the content logically with headers or bullet points.
+5. Use formal yet easy-to-understand language.
+6. End with a brief summary or key takeaways.
+
+📅 **Context:** {datetime.now().strftime("%B %d, %Y")}
+⚙️ **Instruction:** Use your reasoning and domain knowledge to generate the most informative and useful response.
+
+---
+Now generate the output based on the above topic and structure.
+"""
+    return prompt
+
+
+# Example usage
+if __name__ == "__main__":
+    print("=== Power Prompt Generator ===")
+    topic = input("Enter topic: ").strip()
+    goal = input("Enter goal (or leave blank): ").strip() or None
+    audience = input("Enter audience (or leave blank): ").strip() or None
+    format_type = input("Enter format type (or leave blank): ").strip() or None
+
+    power_prompt = generate_power_prompt(topic, goal, audience, format_type)
+    print("\n\n=== Generated Power Prompt ===\n")
+    print(power_prompt)
