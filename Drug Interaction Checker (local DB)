@@ -1,0 +1,40 @@
+# file: interaction_checker.py
+import json
+from itertools import combinations
+
+DATAFILE = "interactions.json"
+# Example interactions.json content:
+# {
+#   "paracetamol|ibuprofen": "Minor interaction: increased hepatotoxicity risk with high doses",
+#   "warfarin|aspirin": "Major interaction: increased bleeding risk"
+# }
+
+def load_db():
+    try:
+        with open(DATAFILE) as f:
+            return json.load(f)
+    except FileNotFoundError:
+        return {}
+
+def check_interactions(drugs):
+    db = load_db()
+    results = {}
+    for a,b in combinations([d.lower() for d in drugs], 2):
+        key1 = f"{a}|{b}"
+        key2 = f"{b}|{a}"
+        if key1 in db:
+            results[(a,b)] = db[key1]
+        elif key2 in db:
+            results[(a,b)] = db[key2]
+    return results
+
+if __name__ == "__main__":
+    print("Enter drug names separated by commas:")
+    s = input()
+    drugs = [d.strip() for d in s.split(",") if d.strip()]
+    res = check_interactions(drugs)
+    if not res:
+        print("No known interactions in local DB.")
+    else:
+        for pair, desc in res.items():
+            print(f"{pair[0]} <-> {pair[1]} : {desc}")
