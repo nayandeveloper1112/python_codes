@@ -1,0 +1,131 @@
+🚀 AI Content Workflow Automation – Full Project
+
+This bot can generate automatically:
+
+Blog Article
+
+Summary
+
+Social Media Posts
+
+YouTube Title + Description
+
+SEO Keywords
+
+Hashtags
+
+All from one line input.
+
+📌 1. Install Packages
+pip install openai python-dotenv
+
+📌 2. Create .env File
+OPENAI_API_KEY=your_api_key_here
+
+📌 3. Create content_bot.py
+import os
+from dotenv import load_dotenv
+from openai import OpenAI
+
+load_dotenv()
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+def ask_ai(prompt):
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[{"role": "user", "content": prompt}]
+    )
+    return response.choices[0].message["content"]
+
+
+def generate_blog(topic):
+    prompt = f"Write an 800-word blog article on: {topic}. Make it engaging and well-structured."
+    return ask_ai(prompt)
+
+
+def generate_summary(topic):
+    prompt = f"Write a concise 100-word summary of the topic: {topic}."
+    return ask_ai(prompt)
+
+
+def generate_social_posts(topic):
+    prompt = f"Create 5 social media posts for Instagram about: {topic}. Keep them catchy."
+    return ask_ai(prompt)
+
+
+def generate_youtube_content(topic):
+    prompt = f"Create a YouTube video title and description about: {topic}."
+    return ask_ai(prompt)
+
+
+def generate_keywords(topic):
+    prompt = f"Generate 15 SEO keywords for: {topic}."
+    return ask_ai(prompt)
+
+
+def generate_hashtags(topic):
+    prompt = f"Generate 20 trending hashtags for: {topic}."
+    return ask_ai(prompt)
+
+
+def run_workflow(topic):
+    print("\n🔵 Generating Blog…")
+    blog = generate_blog(topic)
+
+    print("\n🟢 Generating Summary…")
+    summary = generate_summary(topic)
+
+    print("\n🟣 Generating Social Media Posts…")
+    posts = generate_social_posts(topic)
+
+    print("\n🔴 Generating YouTube Title + Description…")
+    youtube = generate_youtube_content(topic)
+
+    print("\n🟠 Generating Keywords…")
+    keywords = generate_keywords(topic)
+
+    print("\n🟡 Generating Hashtags…")
+    hashtags = generate_hashtags(topic)
+
+    return {
+        "topic": topic,
+        "blog": blog,
+        "summary": summary,
+        "social_posts": posts,
+        "youtube": youtube,
+        "keywords": keywords,
+        "hashtags": hashtags
+    }
+
+
+if __name__ == "__main__":
+    topic = input("Enter your topic: ")
+    result = run_workflow(topic)
+
+    print("\n\n===== AI CONTENT WORKFLOW OUTPUT =====\n")
+    for section, content in result.items():
+        print(f"\n--- {section.upper()} ---\n")
+        print(content)
+
+📌 4. How it Works
+
+You run:
+
+python content_bot.py
+
+
+Input:
+
+Artificial Intelligence in Healthcare
+
+
+The bot automatically produces:
+
+✔ Blog
+✔ Summary
+✔ Social posts
+✔ YouTube content
+✔ Keywords
+✔ Hashtags
+
+All displayed in the terminal — you can later save them to files or a dashboard.
