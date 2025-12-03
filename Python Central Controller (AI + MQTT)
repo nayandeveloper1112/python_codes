@@ -1,0 +1,308 @@
+Create controller/.env:
+
+MQTT_BROKER=192.168.1.10
+MQTT_PORT=1883
+MQTT_USER=your_mqtt_user          # optional
+MQTT_PASS=your_mqtt_password      # optional
+OPENAI_API_KEY=sk-...
+
+
+Install Python deps:
+
+pip install paho-mqtt python-dotenv openai flask
+
+
+Create controller/ai_controller.py:
+
+import os
+import json
+import time
+from threading import Thread
+from dotenv import load_dotenv
+import paho.mqtt.client as mqtt
+import openai
+
+load_dotenv()
+
+MQTT_BROKER = os.getenv("MQTT_BROKER", "localhost")
+MQTT_PORT   = int(os.getenv("MQTT_PORT", "1883"))
+MQTT_USER   = os.getenv("MQTT_USER")
+MQTT_PASS   = os.getenv("MQTT_PASS")
+
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+openai.api_key = OPENAI_API_KEY
+
+# Topics
+CMD_TOPIC = "home/+/set"        # device-specific command e.g., home/livingroom/light1/set
+STATE_TOPIC = "home/+/state"    # device publishes state e.g., home/livingroom/light1/state
+SENSOR_TOPIC = "home/+/sensor"  # sensors publish here
+
+# Simple intent mapping: AI -> MQTT payloads
+def map_intent_to_mqtt(intent):
+    """
+    intent: dict with keys 'action','device','value' (example)
+    returns list of (topic, payload) to publish
+    """
+    actions = []
+    a = intent.get("action")
+    device = intent.get("device")
+    value = intent.get("value")
+
+    if not device:
+        return []
+
+    topic = f"home/{device}/set"
+
+    if a in ("turn_on", "on"):
+        payload = json.dumps({"power": "ON"})
+        actions.append((topic, payload))
+    elif a in ("turn_off", "off"):
+        payload = json.dumps({"power": "OFF"})
+        actions.append((topic, payload))
+    elif a in ("set_temperature", "set_temp"):
+        payload = json.dumps({"target_temp": value})
+        actions.append((topic, payload))
+    elif a == "toggle":
+        payload = json.dumps({"toggle": True})
+        actions.append((topic, payload))
+    # Add more mappings as needed
+    return actions
+
+# Use LLM to parse natural language into an intent JSON
+def parse_with_llm(user_text):
+    prompt = f"""
+You are a smart home assistant intent parser. Convert the user instruction into a JSON with keys:
+- action (e.g., turn_on, turn_off, set_temperature, toggle, get_status)
+- device (device id like 'livingroom/light1' or 'bedroom/thermostat')
+- value (optional, e.g., 22)
+If the instruction is a question asking for sensor reading, set action=get_status and device accordingly.
+Respond ONLY with the JSON.
+User instruction: \"{user_text}\"
+"""
+    try:
+        resp = openai.ChatCompletion.create(
+            model="gpt-4o-mini",
+            messages=[{"role":"user","content":prompt}],
+            max_tokens=150,
+            temperature=0
+        )
+        content = resp.choices[0].message["content"].strip()
+        # Expect content to be JSON; try to parse
+        intent = json.loads(content)
+        return intent
+    except Exception as e:
+        print("LLM parse error:", e)
+        return None
+
+# MQTT callbacks
+def on_connect(client, userdata, flags, rc):
+    print("Connected to MQTT broker with rc:", rc)
+    client.subscribe("home/+/state")
+    client.subscribe("home/+/sensor")
+
+def on_message(client, userdata, msg):
+    print(f"MQTT msg {msg.topic} -> {msg.payload.decode()}")
+    # Optionally update in-memory state or database
+
+def start_mqtt_client():
+    client = mqtt.Client()
+    if MQTT_USER:
+        client.username_pw_set(MQTT_USER, MQTT_PASS)
+    client.on_connect = on_connect
+    client.on_message = on_message
+    client.connect(MQTT_BROKER, MQTT_PORT)
+    return client
+
+# Expose a simple HTTP endpoint to receive text commands (could be from voice)
+from flask import Flask, request, jsonify
+app = Flask(__name__)
+
+mqtt_client = start_mqtt_client()
+# run mqtt loop in background
+def mqtt_loop():
+    mqtt_client.loop_forever()
+
+Thread(target=mqtt_loop, daemon=True).start()
+
+@app.route("/command", methods=["POST"])
+def command():
+    data = request.json
+    text = data.get("text")
+    if not text:
+        return jsonify({"error": "no text provided"}), 400
+
+    intent = parse_with_llm(text)
+    if not intent:
+        return jsonify({"error": "could not parse intent"}), 500
+
+    actions = map_intent_to_mqtt(intent)
+    for topic, payload in actions:
+        mqtt_client.publish(topic, payload)
+    return jsonify({"intent": intent, "published": actions})
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=8000, debug=True)
+
+
+Notes:
+
+The LLM prompt instructs it to return machine-friendly JSON. You may need to tweak for robustness.
+
+Replace model name with the LLM you have access to.
+
+Add error handling, authentication for the /command endpoint.
+
+6) ESP32 (Arduino) — MQTT client example
+
+Install PubSubClient library in Arduino IDE.
+
+#include <WiFi.h>
+#include <PubSubClient.h>
+#include <ArduinoJson.h>
+
+const char* ssid = "YOUR_SSID";
+const char* password = "YOUR_WIFI_PASS";
+
+const char* mqtt_server = "192.168.1.10";
+const int mqtt_port = 1883;
+const char* mqtt_user = "your_mqtt_user";   // optional
+const char* mqtt_pass = "your_mqtt_password";
+
+WiFiClient espClient;
+PubSubClient client(espClient);
+
+// Device identifiers
+const char* device = "livingroom/light1";
+const int relayPin = 2; // change per wiring
+
+void callback(char* topic, byte* payload, unsigned int length) {
+  Serial.print("Message arrived [");
+  Serial.print(topic);
+  Serial.print("] ");
+  String msg;
+  for (unsigned int i = 0; i < length; i++) {
+    msg += (char)payload[i];
+  }
+  Serial.println(msg);
+
+  // Parse JSON payload
+  StaticJsonDocument<200> doc;
+  DeserializationError err = deserializeJson(doc, msg);
+  if (err) {
+    Serial.println("JSON parse failed");
+    return;
+  }
+  if (doc.containsKey("power")) {
+    const char* pw = doc["power"];
+    if (String(pw) == "ON") {
+      digitalWrite(relayPin, HIGH);
+      publish_state("ON");
+    } else {
+      digitalWrite(relayPin, LOW);
+      publish_state("OFF");
+    }
+  }
+  if (doc.containsKey("toggle")) {
+    int s = digitalRead(relayPin);
+    digitalWrite(relayPin, !s);
+    publish_state(digitalRead(relayPin) ? "ON" : "OFF");
+  }
+}
+
+void publish_state(const char* state) {
+  StaticJsonDocument<200> doc;
+  doc["power"] = state;
+  char buf[128];
+  size_t n = serializeJson(doc, buf);
+  String topic = String("home/") + device + "/state";
+  client.publish(topic.c_str(), buf, n);
+}
+
+void reconnect() {
+  while (!client.connected()) {
+    Serial.print("Attempting MQTT connection...");
+    String clientId = "ESP32-";
+    clientId += String(random(0xffff), HEX);
+    if (client.connect(clientId.c_str(), mqtt_user, mqtt_pass)) {
+      Serial.println("connected");
+      String cmdTopic = String("home/") + device + "/set";
+      client.subscribe(cmdTopic.c_str());
+      // Publish initial state
+      publish_state("OFF");
+    } else {
+      Serial.print("failed, rc=");
+      Serial.print(client.state());
+      Serial.println(" try again in 5 seconds");
+      delay(5000);
+    }
+  }
+}
+
+void setup() {
+  pinMode(relayPin, OUTPUT);
+  digitalWrite(relayPin, LOW);
+  Serial.begin(115200);
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  client.setServer(mqtt_server, mqtt_port);
+  client.setCallback(callback);
+}
+
+void loop() {
+  if (!client.connected()) {
+    reconnect();
+  }
+  client.loop();
+}
+
+
+Wiring: relay module to relayPin, sensor lines for DHT etc. Add additional handlers for sensors to publish to home/{device}/sensor.
+
+7) Voice Assistant glue (basic)
+
+Install speech_recognition and pyttsx3:
+
+pip install SpeechRecognition pyttsx3
+
+
+voice_assistant.py (very simple):
+
+import requests
+import speech_recognition as sr
+import pyttsx3
+
+API_URL = "http://localhost:8000/command"  # controller endpoint
+
+recognizer = sr.Recognizer()
+engine = pyttsx3.init()
+
+def speak(text):
+    engine.say(text)
+    engine.runAndWait()
+
+def listen_and_send():
+    with sr.Microphone() as source:
+        print("Listening...")
+        audio = recognizer.listen(source, phrase_time_limit=6)
+
+    try:
+        text = recognizer.recognize_google(audio)
+        print("You said:", text)
+        resp = requests.post(API_URL, json={"text": text}).json()
+        # If intent is status request, we may want to return a spoken reply
+        intent = resp.get("intent", {})
+        if intent.get("action") == "get_status":
+            # In real system, controller should return sensor values or we query topic/state
+            speak("Status requested. Check the dashboard.")
+        else:
+            speak("Command sent.")
+    except Exception as e:
+        print("Error:", e)
+        speak("Sorry, I didn't get that.")
+
+if __name__ == "__main__":
+    while True:
+        listen_and_send()
