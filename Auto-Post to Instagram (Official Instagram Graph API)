@@ -1,0 +1,190 @@
+🚀 1. Auto-Post to Instagram (Official Instagram Graph API)
+✔ Requirements
+
+Meta Developer Account
+
+Instagram Business Account
+
+Facebook Page linked to Instagram
+
+Permanent Access Token
+
+Instagram Business Account ID
+
+✔ Supports:
+
+Posting images + caption
+
+Posting videos + caption
+
+📌 Python Code: Post Image + Caption to Instagram
+
+Install:
+
+pip install requests python-dotenv
+
+
+Create instagram_poster.py:
+
+import requests
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+ACCESS_TOKEN = os.getenv("IG_ACCESS_TOKEN")
+IG_USER_ID = os.getenv("IG_USER_ID")   # Instagram Business Account ID
+
+
+def post_to_instagram(image_url, caption):
+    # Step 1: Create media container
+    create_url = (
+        f"https://graph.facebook.com/v18.0/{IG_USER_ID}/media"
+        f"?image_url={image_url}"
+        f"&caption={caption}"
+        f"&access_token={ACCESS_TOKEN}"
+    )
+
+    create_res = requests.post(create_url).json()
+
+    if "id" not in create_res:
+        return create_res
+    
+    container_id = create_res["id"]
+
+    # Step 2: Publish container
+    publish_url = (
+        f"https://graph.facebook.com/v18.0/{IG_USER_ID}/media_publish"
+        f"?creation_id={container_id}"
+        f"&access_token={ACCESS_TOKEN}"
+    )
+
+    publish_res = requests.post(publish_url).json()
+    return publish_res
+
+
+if __name__ == "__main__":
+    img = "https://example.com/my_image.jpg"
+    caption = """Your Instagram Caption Here"""
+
+    result = post_to_instagram(img, caption)
+    print(result)
+
+🚀 2. Auto-Post to YouTube (YouTube Data API)
+✔ Requirements
+
+Google Cloud Project
+
+OAuth Client ID
+
+YouTube Data API enabled
+
+client_secret.json file
+
+Install:
+
+pip install google-auth-oauthlib google-api-python-client python-dotenv
+
+📌 Python Code: Upload a Video to YouTube
+
+Create youtube_uploader.py:
+
+import os
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaFileUpload
+from google_auth_oauthlib.flow import InstalledAppFlow
+
+SCOPES = ["https://www.googleapis.com/auth/youtube.upload"]
+
+def youtube_auth():
+    flow = InstalledAppFlow.from_client_secrets_file(
+        "client_secret.json", SCOPES
+    )
+    creds = flow.run_local_server(port=0)
+    return creds
+
+
+def upload_video(file_path, title, description):
+    creds = youtube_auth()
+    youtube = build("youtube", "v3", credentials=creds)
+
+    request_body = {
+        "snippet": {
+            "title": title,
+            "description": description,
+            "categoryId": "22"
+        },
+        "status": {
+            "privacyStatus": "public"
+        }
+    }
+
+    media = MediaFileUpload(file_path, chunksize=-1, resumable=True)
+
+    request = youtube.videos().insert(
+        part="snippet,status",
+        body=request_body,
+        media_body=media
+    )
+
+    response = request.execute()
+    return response
+
+
+if __name__ == "__main__":
+    result = upload_video(
+        file_path="video.mp4",
+        title="My AI-Generated Video",
+        description="This video was posted automatically using Python!"
+    )
+    print(result)
+
+🚀 3. Combine Both Into the AI Workflow Automation
+
+After the AI generates:
+
+Blog
+
+Social posts
+
+YouTube title
+
+YouTube description
+
+You can auto-post like this:
+
+from instagram_poster import post_to_instagram
+from youtube_uploader import upload_video
+
+# FROM AI WORKFLOW RESULT
+caption = result["social_posts"]
+youtube_title = result["youtube"]["title"]
+youtube_desc = result["youtube"]["description"]
+
+# Instagram
+post_to_instagram(
+    image_url="https://your-ai-generated-image.com/image.jpg",
+    caption=caption
+)
+
+# YouTube
+upload_video(
+    file_path="generated_video.mp4",
+    title=youtube_title,
+    description=youtube_desc
+)
+
+🌈 OPTIONAL: AUTOMATED THUMBNAIL GENERATION
+
+I can also add:
+
+AI thumbnail generation
+
+Automatic resizing
+
+Watermark
+
+Branding
+
+via Python + Pillow or DALL·E API.
+
