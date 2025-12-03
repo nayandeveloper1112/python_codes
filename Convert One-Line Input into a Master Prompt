@@ -1,0 +1,25 @@
+def create_master_prompt(user_input):
+    master_prompt = f"""
+You are an advanced AI assistant. Your task is based on the following short instruction:
+
+**User Input:** {user_input}
+
+Please generate a detailed, structured, and helpful response following these rules:
+
+1. Understand the user’s intent from the short instruction.
+2. Expand it into a complete, well-explained output.
+3. Provide step-by-step reasoning where relevant.
+4. Maintain clarity, accuracy, and helpfulness.
+5. If needed, ask clarifying questions to improve precision.
+
+Start your response now.
+"""
+    return master_prompt.strip()
+
+
+# ---------- Main Program ----------
+if __name__ == "__main__":
+    one_line = input("Enter your one-line instruction: ")
+    result = create_master_prompt(one_line)
+    print("\nGenerated Master Prompt:\n")
+    print(result)
