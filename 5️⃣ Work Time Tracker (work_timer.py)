@@ -1,0 +1,12 @@
+# Work Time Tracker
+
+import time
+
+input("Press Enter to START work...")
+start_time = time.time()
+
+input("Press Enter to STOP work...")
+end_time = time.time()
+
+total_minutes = (end_time - start_time) / 60
+print(f"Total work time: {total_minutes:.2f} minutes")
