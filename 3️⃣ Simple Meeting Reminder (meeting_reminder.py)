@@ -1,0 +1,9 @@
+# Simple Meeting Reminder
+
+import time
+
+minutes = int(input("Enter reminder time (in minutes): "))
+print("Reminder set...")
+
+time.sleep(minutes * 60)
+print("Reminder: Meeting Time!")
