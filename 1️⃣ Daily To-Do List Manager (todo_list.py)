@@ -1,0 +1,14 @@
+# Daily To-Do List Manager
+
+tasks = []
+
+print("Daily To-Do List")
+while True:
+    task = input("Enter a task (type 'done' to finish): ")
+    if task.lower() == "done":
+        break
+    tasks.append(task)
+
+print("\nToday's Tasks:")
+for i, t in enumerate(tasks, 1):
+    print(f"{i}. {t}")
