@@ -1,0 +1,20 @@
+# File Renamer for Office Documents
+
+import os
+
+path = input("Enter folder path: ")
+prefix = input("Enter file prefix: ")
+
+files = os.listdir(path)
+count = 1
+
+for file in files:
+    old_path = os.path.join(path, file)
+    if os.path.isfile(old_path):
+        ext = os.path.splitext(file)[1]
+        new_name = f"{prefix}_{count}{ext}"
+        new_path = os.path.join(path, new_name)
+        os.rename(old_path, new_path)
+        count += 1
+
+print("Files renamed successfully.")
