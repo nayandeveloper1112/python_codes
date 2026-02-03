@@ -1,0 +1,11 @@
+from quarky import *
+from ai import face_detection
+
+while True:
+    faces = face_detection.detect()
+    if len(faces) > 0:
+        buzzer.on()
+        led.red.on()
+    else:
+        buzzer.off()
+        led.red.off()
