@@ -1,0 +1,20 @@
+from quarky import *
+from ai import hand_gesture
+
+while True:
+    gesture = hand_gesture.detect()
+    
+    if gesture == "up":
+        motor.left.run(60)
+        motor.right.run(60)
+    elif gesture == "down":
+        motor.left.run(-60)
+        motor.right.run(-60)
+    elif gesture == "left":
+        motor.left.run(-40)
+        motor.right.run(40)
+    elif gesture == "right":
+        motor.left.run(40)
+        motor.right.run(-40)
+    else:
+        motor.stop_all()
