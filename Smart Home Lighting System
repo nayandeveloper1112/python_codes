@@ -1,0 +1,9 @@
+from quarky import *
+
+while True:
+    key = keyboard.read()
+    
+    if key == "1":
+        led.green.on()
+    elif key == "0":
+        led.green.off()
