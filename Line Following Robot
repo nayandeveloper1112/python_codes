@@ -1,0 +1,17 @@
+from quarky import *
+
+while True:
+    left_ir = ir.left()
+    right_ir = ir.right()
+    
+    if left_ir == 0 and right_ir == 0:
+        motor.left.run(50)
+        motor.right.run(50)
+    elif left_ir == 0:
+        motor.left.run(30)
+        motor.right.run(60)
+    elif right_ir == 0:
+        motor.left.run(60)
+        motor.right.run(30)
+    else:
+        motor.stop_all()
