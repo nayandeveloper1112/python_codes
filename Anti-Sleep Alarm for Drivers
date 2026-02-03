@@ -1,0 +1,12 @@
+from quarky import *
+from ai import face_landmarks
+
+while True:
+    eyes = face_landmarks.eye_status()
+    
+    if eyes == "closed":
+        buzzer.on()
+        led.red.on()
+    else:
+        buzzer.off()
+        led.red.off()
