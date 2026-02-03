@@ -1,0 +1,14 @@
+from quarky import *
+
+while True:
+    led.red.on()
+    sleep(5)
+    led.red.off()
+    
+    led.yellow.on()
+    sleep(2)
+    led.yellow.off()
+    
+    led.green.on()
+    sleep(5)
+    led.green.off()
