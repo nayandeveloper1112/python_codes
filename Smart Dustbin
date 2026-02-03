@@ -1,0 +1,10 @@
+from quarky import *
+
+servo.set_angle(0)
+
+while True:
+    distance = ultrasonic.read()
+    if distance < 10:
+        servo.set_angle(90)
+        sleep(2)
+        servo.set_angle(0)
