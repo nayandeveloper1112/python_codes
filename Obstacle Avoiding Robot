@@ -1,0 +1,13 @@
+from quarky import *
+
+while True:
+    distance = ultrasonic.read()
+    if distance < 15:
+        motor.left.run(-50)
+        motor.right.run(-50)
+        sleep(0.5)
+        motor.left.run(50)
+        motor.right.run(-50)
+    else:
+        motor.left.run(60)
+        motor.right.run(60)
