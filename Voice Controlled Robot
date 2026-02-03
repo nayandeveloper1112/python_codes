@@ -1,0 +1,20 @@
+from quarky import *
+from ai import speech_recognition
+
+while True:
+    command = speech_recognition.listen()
+    
+    if command == "forward":
+        motor.left.run(60)
+        motor.right.run(60)
+    elif command == "back":
+        motor.left.run(-60)
+        motor.right.run(-60)
+    elif command == "left":
+        motor.left.run(-40)
+        motor.right.run(40)
+    elif command == "right":
+        motor.left.run(40)
+        motor.right.run(-40)
+    elif command == "stop":
+        motor.stop_all()
