@@ -1,0 +1,9 @@
+from quarky import *
+
+while True:
+    temp = temperature.read()
+    humidity = humidity_sensor.read()
+    
+    print("Temperature:", temp)
+    print("Humidity:", humidity)
+    sleep(2)
