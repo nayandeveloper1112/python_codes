@@ -1,0 +1,62 @@
+import json
+
+class Quiz:
+    def __init__(self):
+        self.questions = self.load_questions()
+        self.score = 0
+
+    def load_questions(self):
+        # Sample questions (can be loaded from JSON file)
+        return [
+            {
+                "question": "What is the capital of India?",
+                "options": ["A. Mumbai", "B. Delhi", "C. Kolkata", "D. Chennai"],
+                "answer": "B"
+            },
+            {
+                "question": "Which language is used for AI?",
+                "options": ["A. Python", "B. C", "C. Java", "D. HTML"],
+                "answer": "A"
+            },
+            {
+                "question": "What is 5 + 3?",
+                "options": ["A. 5", "B. 8", "C. 10", "D. 15"],
+                "answer": "B"
+            }
+        ]
+
+    def start(self):
+        print("==== Quiz Started ====\n")
+
+        for q in self.questions:
+            print(q["question"])
+            for opt in q["options"]:
+                print(opt)
+
+            answer = input("Enter your answer (A/B/C/D): ").upper()
+
+            if answer == q["answer"]:
+                print("✅ Correct!\n")
+                self.score += 1
+            else:
+                print(f"❌ Wrong! Correct answer is {q['answer']}\n")
+
+        self.show_result()
+
+    def show_result(self):
+        print("==== Result ====")
+        print(f"Score: {self.score}/{len(self.questions)}")
+
+        percentage = (self.score / len(self.questions)) * 100
+
+        if percentage >= 80:
+            print("Grade: A")
+        elif percentage >= 50:
+            print("Grade: B")
+        else:
+            print("Grade: C")
+
+
+if __name__ == "__main__":
+    quiz = Quiz()
+    quiz.start()
