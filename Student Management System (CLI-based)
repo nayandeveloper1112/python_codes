@@ -1,0 +1,114 @@
+import json
+import os
+
+class Student:
+    def __init__(self, student_id, name, marks):
+        self.student_id = student_id
+        self.name = name
+        self.marks = marks  # dictionary {subject: marks}
+
+    def calculate_average(self):
+        return sum(self.marks.values()) / len(self.marks)
+
+    def to_dict(self):
+        return {
+            "student_id": self.student_id,
+            "name": self.name,
+            "marks": self.marks
+        }
+
+
+class StudentManager:
+    def __init__(self, filename="students.json"):
+        self.filename = filename
+        self.students = self.load_students()
+
+    def load_students(self):
+        if not os.path.exists(self.filename):
+            return []
+        try:
+            with open(self.filename, "r") as file:
+                data = json.load(file)
+                return [Student(**student) for student in data]
+        except Exception as e:
+            print("Error loading data:", e)
+            return []
+
+    def save_students(self):
+        try:
+            with open(self.filename, "w") as file:
+                json.dump([s.to_dict() for s in self.students], file, indent=4)
+        except Exception as e:
+            print("Error saving data:", e)
+
+    def add_student(self):
+        try:
+            student_id = input("Enter Student ID: ")
+            name = input("Enter Name: ")
+            subjects = int(input("Enter number of subjects: "))
+            marks = {}
+
+            for _ in range(subjects):
+                subject = input("Subject name: ")
+                score = float(input("Marks: "))
+                marks[subject] = score
+
+            student = Student(student_id, name, marks)
+            self.students.append(student)
+            self.save_students()
+            print("Student added successfully!\n")
+
+        except ValueError:
+            print("Invalid input! Please enter correct values.\n")
+
+    def view_students(self):
+        if not self.students:
+            print("No student records found.\n")
+            return
+
+        for student in self.students:
+            avg = student.calculate_average()
+            print(f"\nID: {student.student_id}")
+            print(f"Name: {student.name}")
+            print("Marks:", student.marks)
+            print(f"Average: {avg:.2f}")
+        print()
+
+    def delete_student(self):
+        student_id = input("Enter Student ID to delete: ")
+        for student in self.students:
+            if student.student_id == student_id:
+                self.students.remove(student)
+                self.save_students()
+                print("Student deleted successfully!\n")
+                return
+        print("Student not found.\n")
+
+
+def main():
+    manager = StudentManager()
+
+    while True:
+        print("==== Student Management System ====")
+        print("1. Add Student")
+        print("2. View Students")
+        print("3. Delete Student")
+        print("4. Exit")
+
+        choice = input("Enter your choice: ")
+
+        if choice == "1":
+            manager.add_student()
+        elif choice == "2":
+            manager.view_students()
+        elif choice == "3":
+            manager.delete_student()
+        elif choice == "4":
+            print("Exiting program...")
+            break
+        else:
+            print("Invalid choice! Try again.\n")
+
+
+if __name__ == "__main__":
+    main()
