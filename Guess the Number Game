@@ -1,0 +1,8 @@
+secret_number = 7
+
+guess = int(input("Guess the number (1-10): "))
+
+if guess == secret_number:
+    print("Congratulations! You guessed it right.")
+else:
+    print("Sorry, try again.")
