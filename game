@@ -1,0 +1,14 @@
+questions = {
+    "What is Python?": "Programming Language",
+    "Who created Python?": "Guido van Rossum"
+}
+
+score = 0
+
+for question, answer in questions.items():
+    user_answer = input(question + ": ")
+
+    if user_answer.lower() == answer.lower():
+        score += 1
+
+print("Your Score:", score)
